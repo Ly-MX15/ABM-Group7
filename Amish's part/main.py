@@ -29,4 +29,5 @@ server = ModularServer(
     SugarScape, [canvas_element], "Sugarscape Model",
     {"height": 50, "width": 50, "initial_population": 100}
 )
+server.port = 8548
 server.launch()
