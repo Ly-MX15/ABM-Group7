@@ -41,40 +41,32 @@ class Trader(Agent):
                 self.pos, moore=True, include_center=False, radius=self.vision)]
 
         # Get cell with most sugar
-        max_total = -1
-        shortest_distance = 100
-        max_cell = []
+        max_welfare = -1
+        best_position = None
+        shortest_distance = float('inf')
+
         for neighbour in neighbours:
+            if not self.model.grid.is_cell_empty(neighbour):
+                continue
+            
             this_cell = self.model.grid.get_cell_list_contents([neighbour])
             for agent in this_cell:
                 if isinstance(agent, Cell):
-                    # Compute weighted average of sugar and spice
-                    weighted_sugar = self.sugar_weight * agent.sugar
-                    weighted_spice = self.spice_weight * agent.spice
-                    total = weighted_sugar + weighted_spice
+                    # Compute welfare based on sum of current resources and resources in the cell
+                    combined_sugar = self.sugar + agent.sugar
+                    combined_spice = self.spice + agent.spice
+                    welfare = self.welfare(self, combined_sugar, combined_spice)
+                    distance = get_distance(self.pos, neighbour)
 
-                    # Update max_sugar and max_sugar_cells
-                    if total > max_total:
-                        # Get distance to cell
-                        distance = get_distance(self.pos, neighbour)
+                    # Update best position
+                    if (welfare > max_welfare) or (welfare == max_welfare and distance < shortest_distance):
+                        max_welfare = welfare
+                        best_position = neighbour
                         shortest_distance = distance
-                        max_total = total
-                        max_cell = [neighbour]
 
-                    # Append to max_sugar_cells if equal
-                    elif total == max_total:
-                        # Get distance to cell
-                        distance = get_distance(self.pos, neighbour)
-                        if distance < shortest_distance:
-                            shortest_distance = distance
-                            max_cell = [neighbour]
-                        elif distance == shortest_distance:
-                            max_cell.append(neighbour)
-
-        # Move to cell with most sugar
-        new_position = random.choice(range(len(max_cell)))
-        new_position = max_cell[new_position]
-        self.model.grid.move_agent(self, new_position)
+        if best_position:
+            # Move to the position with the highest welfare
+            self.model.grid.move_agent(self, best_position)
 
     def pick_up(self):
         this_cell = self.model.grid.get_cell_list_contents([self.pos])
@@ -106,3 +98,6 @@ class Trader(Agent):
 
     def trade(self):
         pass
+    
+    def welfare(self, sugar, spice):
+        return (sugar ** self.sugar_weighted * spice ** self.spice_weighted)
