@@ -64,29 +64,3 @@ server = ModularServer(
     {"height": 50, "width": 50, "initial_population": 100},
 )
 server.launch()
-
-import matplotlib.pyplot as plt
-import pandas as pd
-
-# Run the model for 300 steps
-model = SugarScape(height=50, width=50, initial_population=100)
-for i in range(300):
-    model.step()
-
-# Collect data
-data = model.datacollector.get_model_vars_dataframe()
-
-# Plot data
-def plot_and_save(data, y_label, title, filename):
-    plt.figure()
-    data.plot()
-    plt.ylabel(y_label)
-    plt.title(title)
-    plt.savefig(filename)
-    plt.close()
-
-plot_and_save(data[['Deaths']], 'Number of Deaths', 'Deaths over Time', 'deaths_over_time.png')
-plot_and_save(data[['GiniCoefficient']], 'Gini Coefficient', 'Gini Coefficient over Time', 'gini_coefficient_over_time.png')
-plot_and_save(data[['AverageVision']], 'Average Vision', 'Average Vision over Time', 'average_vision_over_time.png')
-plot_and_save(data[['AverageSugarMetabolism', 'AverageSpiceMetabolism']], 'Average Metabolism', 'Average Metabolism over Time', 'average_metabolism_over_time.png')
-plot_and_save(data[['PriceStabilization']], 'Price Stabilization', 'Price Stabilization over Time', 'price_stabilization_over_time.png')
