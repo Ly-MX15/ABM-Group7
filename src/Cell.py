@@ -18,3 +18,5 @@ class Cell(Agent):
         # Regenerate sugar
         self.sugar = min(self.sugar + 1, self.capacities[0])
         self.spice = min(self.spice + 1, self.capacities[1])
+
+

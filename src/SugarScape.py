@@ -2,17 +2,20 @@ from mesa import Model
 from mesa.space import MultiGrid
 from mesa.time import RandomActivationByType
 from mesa.datacollection import DataCollector
-from numpy import random
+from numpy import random, seed
 from .Trader import Trader
 from .Cell import Cell
 
 class SugarScape(Model):
-    def __init__(self, height=50, width=50, initial_population=100):
+    def __init__(self, height=50, width=50, initial_population=100, seed_value=42):
         super().__init__()
         # Set parameters
         self.height = height
         self.width = width
         self.initial_population = initial_population
+
+        # Set seed for reproducibility
+        seed(seed_value)
 
         self.schedule = RandomActivationByType(self)
         self.grid = MultiGrid(self.height, self.width, False)
@@ -23,8 +26,16 @@ class SugarScape(Model):
         # Create cells
         id = 0
         for content, (x, y) in self.grid.coord_iter():
-            # Instantiate cell
-            capacities = random.randint(1, 10, 2)
+            # Define capacities and reproduction rates based on location
+            if x < self.width // 2 and y < self.height // 2:  # Left Upper
+                capacities = [random.randint(5, 10), random.randint(0, 2)]
+            elif x < self.width // 2 and y >= self.height // 2:  # Left Lower
+                capacities = [random.randint(5, 10), random.randint(0, 2)]
+            elif x >= self.width // 2 and y < self.height // 2:  # Right Upper
+                capacities = [random.randint(0, 2), random.randint(5, 10)]
+            else:  # Right Lower
+                capacities = [random.randint(0, 2), random.randint(5, 10)]
+                
             cell = Cell(id, self, capacities)
 
             # Place cell on grid
