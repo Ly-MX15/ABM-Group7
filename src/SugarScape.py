@@ -2,12 +2,19 @@ from mesa import Model
 from mesa.space import MultiGrid
 from mesa.time import RandomActivationByType
 from mesa.datacollection import DataCollector
-from numpy import random, seed
+from numpy import random
 from .Trader import Trader
 from .Cell import Cell
+from .BaseTaxer import BaseTaxer
+from .BaseDistributer import BaseDistributer
+from .ProgressiveTaxer import ProgressiveTaxer
+from .ProgressiveDistributer import ProgressiveDistributer
+
 
 class SugarScape(Model):
-    def __init__(self, height=50, width=50, initial_population=100, seed_value=42):
+    def __init__(self, height=50, width=50, initial_population=100,
+                 tax_scheme="flat", tax_steps=10, tax_rate=0.1, distributer_scheme="flat", distributer_steps=20,
+                 seed_value=42):
         super().__init__()
         # Set parameters
         self.height = height
@@ -15,13 +22,28 @@ class SugarScape(Model):
         self.initial_population = initial_population
 
         # Set seed for reproducibility
-        seed(seed_value)
+        random.seed(seed_value)
 
         self.schedule = RandomActivationByType(self)
         self.grid = MultiGrid(self.height, self.width, False)
 
         # Initialize counters
         self.deaths = 0
+
+        # Create taxers and distributers
+        if tax_scheme == "flat":
+            self.taxer = BaseTaxer(self, tax_steps, tax_rate)
+        elif tax_scheme == "progressive":
+            self.taxer = ProgressiveTaxer(self, tax_steps, tax_rate)
+        else:
+            raise ValueError("Invalid tax scheme")
+
+        if distributer_scheme == "flat":
+            self.distributer = BaseDistributer(self, distributer_steps)
+        elif distributer_scheme == "progressive":
+            self.distributer = ProgressiveDistributer(self, distributer_steps)
+        else:
+            raise ValueError("Invalid distributer scheme")
 
         self.datacollector = DataCollector(
             {
@@ -47,7 +69,7 @@ class SugarScape(Model):
                 capacities = [random.randint(0, 2), random.randint(5, 10)]
             else:  # Right Lower
                 capacities = [random.randint(0, 2), random.randint(5, 10)]
-                
+
             cell = Cell(id, self, capacities)
 
             # Place cell on grid
@@ -81,12 +103,21 @@ class SugarScape(Model):
 
     def step(self):
         self.schedule.step()
+
+        # Get all trader
+        traders = [agent for agent in self.schedule.agents if isinstance(agent, Trader)]
+
+        # Take step for taxer and distributer
+        self.taxer.step(traders)
+        self.distributer.step(traders, self.taxer)
+
         self.datacollector.collect(self)
         self.running = True if self.schedule.get_agent_count() > 0 else False
 
     def run_model(self, step_count=200):
         for i in range(step_count):
             self.step()
+
 
 def calculate_gini(model):
     # Calculate Gini coefficient based on traders' wealth
@@ -100,20 +131,24 @@ def calculate_gini(model):
     gini_coefficient = (2 * cumulative_weighted_wealth) / (n * cumulative_wealth) - (n + 1) / n
     return gini_coefficient
 
+
 def average_vision(model):
     # Calculate average vision of traders
     visions = [agent.vision for agent in model.schedule.agents if isinstance(agent, Trader)]
     return sum(visions) / len(visions) if visions else 0
+
 
 def average_sugar_metabolism(model):
     # Calculate average sugar metabolism of traders
     sugar_metabolisms = [agent.sugar_metabolism for agent in model.schedule.agents if isinstance(agent, Trader)]
     return sum(sugar_metabolisms) / len(sugar_metabolisms) if sugar_metabolisms else 0
 
+
 def average_spice_metabolism(model):
     # Calculate average spice metabolism of traders
     spice_metabolisms = [agent.spice_metabolism for agent in model.schedule.agents if isinstance(agent, Trader)]
     return sum(spice_metabolisms) / len(spice_metabolisms) if spice_metabolisms else 0
+
 
 def price_stabilization(model):
     # Calculate price stabilization (example: average price over all traders)
