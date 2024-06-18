@@ -2,7 +2,7 @@ from mesa import Model
 from mesa.space import MultiGrid
 from mesa.time import RandomActivationByType
 from mesa.datacollection import DataCollector
-from numpy import random, seed
+import numpy as np
 from .Trader import Trader
 from .Cell import Cell
 
@@ -15,7 +15,7 @@ class SugarScape(Model):
         self.initial_population = initial_population
 
         # Set seed for reproducibility
-        seed(seed_value)
+        np.random.seed(seed_value)
 
         self.schedule = RandomActivationByType(self)
         self.grid = MultiGrid(self.height, self.width, False)
@@ -28,13 +28,13 @@ class SugarScape(Model):
         for content, (x, y) in self.grid.coord_iter():
             # Define capacities and reproduction rates based on location
             if x < self.width // 2 and y < self.height // 2:  # Left Upper
-                capacities = [random.randint(5, 10), random.randint(0, 2)]
+                capacities = [np.random.randint(5, 10), np.random.randint(0, 2)]
             elif x < self.width // 2 and y >= self.height // 2:  # Left Lower
-                capacities = [random.randint(5, 10), random.randint(0, 2)]
+                capacities = [np.random.randint(5, 10), np.random.randint(0, 2)]
             elif x >= self.width // 2 and y < self.height // 2:  # Right Upper
-                capacities = [random.randint(0, 2), random.randint(5, 10)]
+                capacities = [np.random.randint(0, 2), np.random.randint(5, 10)]
             else:  # Right Lower
-                capacities = [random.randint(0, 2), random.randint(5, 10)]
+                capacities = [np.random.randint(0, 2), np.random.randint(5, 10)]
                 
             cell = Cell(id, self, capacities)
 
@@ -48,13 +48,13 @@ class SugarScape(Model):
         # Create traders
         for i in range(self.initial_population):
             # Random position
-            x = random.randint(0, self.width)
-            y = random.randint(0, self.height)
+            x = np.random.randint(0, self.width)
+            y = np.random.randint(0, self.height)
 
             # Instantiate trader
-            sugar, spice = random.randint(1, 10, 2)
-            sugar_metabolism, spice_metabolism = random.randint(1, 4, 2)
-            vision = random.randint(1, 4)
+            sugar, spice = np.random.randint(1, 10, 2)
+            sugar_metabolism, spice_metabolism = np.random.randint(1, 4, 2)
+            vision = np.random.randint(1, 4)
             trader = Trader(id, self, sugar, sugar_metabolism, spice, spice_metabolism, vision)
 
             # Place trader on grid
@@ -63,6 +63,7 @@ class SugarScape(Model):
 
             # Increment id
             id += 1
+
 
         self.running = True
         self.datacollector.collect(self)
