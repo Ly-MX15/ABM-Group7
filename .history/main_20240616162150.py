@@ -65,9 +65,6 @@ server = ModularServer(
 )
 server.launch()
 
-import matplotlib.pyplot as plt
-import pandas as pd
-
 # Run the model for 300 steps
 model = SugarScape(height=50, width=50, initial_population=100)
 for i in range(300):
