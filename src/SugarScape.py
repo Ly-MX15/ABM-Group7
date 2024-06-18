@@ -15,7 +15,7 @@ from .statistics import *
 class SugarScape(Model):
     def __init__(self, height=50, width=50, initial_population=100,
                  tax_scheme="flat", tax_steps=10, tax_rate=0.1, distributer_scheme="flat", distributer_steps=20,
-                 repopulate_factor=4, seed_value=42):
+                 repopulate_factor=10, seed_value=42):
         super().__init__()
         # Set parameters
         self.height = height
@@ -141,6 +141,11 @@ class SugarScape(Model):
 
     def get_trade_log(self):
         return self.datacollector.get_table_dataframe("Trades")
+
+    def remove_agent(self, agent):
+        self.grid.remove_agent(agent)
+        self.schedule.remove(agent)
+        del self.traders[agent.unique_id]
 
     def repopulation(self):
         # Get distribution of metabolism, vision and max age

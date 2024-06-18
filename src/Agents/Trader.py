@@ -32,6 +32,9 @@ class Trader(Agent):
         # Initialize trader's price
         self.price = 0
 
+        # If agent has died
+        self.has_died = False
+
     def step(self):
         # Move agent
         self.move()
@@ -45,15 +48,18 @@ class Trader(Agent):
         # Trade sugar and spice
         self.trade()
 
-        # Metabolize sugar and spice
-        self.metabolize()
-
         # Repopulation
         self.repopulate()
 
+        # Metabolize sugar and spice
+        self.metabolize()
 
         # Increment age
         self.age_increase()
+
+        # Check if agent has died
+        if self.has_died:
+            self.model.remove_agent(self)
 
     def move(self):
         # Get neighborhood
@@ -63,7 +69,7 @@ class Trader(Agent):
 
         # Get cell with most sugar
         max_welfare = -1
-        best_position = self.pos
+        best_position = None
         shortest_distance = float('inf')
 
         for neighbour in neighbours:
@@ -78,20 +84,19 @@ class Trader(Agent):
                     break
             if has_agent:
                 continue
+            agent = this_cell[0]
 
-            for agent in this_cell:
-                if isinstance(agent, Cell):
-                    # Compute welfare based on sum of current resources and resources in the cell
-                    combined_sugar = self.sugar + agent.sugar
-                    combined_spice = self.spice + agent.spice
-                    welfare = self.welfare(combined_sugar, combined_spice)
-                    distance = get_distance(self.pos, neighbour)
+            # Compute welfare based on sum of current resources and resources in the cell
+            combined_sugar = self.sugar + agent.sugar
+            combined_spice = self.spice + agent.spice
+            welfare = self.welfare(combined_sugar, combined_spice)
+            distance = get_distance(self.pos, neighbour)
 
-                    # Update best position
-                    if (welfare > max_welfare) or (welfare == max_welfare and distance < shortest_distance):
-                        max_welfare = welfare
-                        best_position = neighbour
-                        shortest_distance = distance
+            # Update best position
+            if (welfare > max_welfare) or (welfare == max_welfare and distance < shortest_distance):
+                max_welfare = welfare
+                best_position = neighbour
+                shortest_distance = distance
 
         if best_position:
             # Move to the position with the highest welfare
@@ -117,8 +122,8 @@ class Trader(Agent):
 
         # Die if sugar is less than 0
         if self.sugar < 0 or self.spice < 0:
-            self.remove()
             self.model.deaths_starved_step += 1
+            self.has_died = True
 
     def trade(self):
         # Get neighborhood
@@ -233,7 +238,7 @@ class Trader(Agent):
 
         # Check if age is greater than max age
         if self.age >= self.max_age:
-            self.remove()
+            self.has_died = True
             self.model.deaths_age_step += 1
 
     def welfare(self, sugar, spice):
@@ -242,7 +247,3 @@ class Trader(Agent):
     def update_wealth(self):
         self.wealth = self.welfare(self.sugar, self.spice)
 
-    def remove(self):
-        self.model.grid.remove_agent(self)
-        self.model.schedule.remove(self)
-        del self.model.traders[self.unique_id]
