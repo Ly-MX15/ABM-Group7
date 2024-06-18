@@ -2,8 +2,10 @@ from mesa import Agent
 from numpy import random
 from .Cell import Cell
 
+
 def get_distance(pos1, pos2):
     return (pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2
+
 
 class Trader(Agent):
     def __init__(self, unique_id, model, sugar, sugar_metabolism,
@@ -21,12 +23,22 @@ class Trader(Agent):
         self.spice_weight = sugar_metabolism / (sugar_metabolism + spice_metabolism)
         self.sugar_weight = 1 - self.spice_weight
 
+        # Set initial wealth
+        self.wealth = 0
+        self.update_wealth()
+
+        # Initialize trader's price
+        self.price = 0
+
     def step(self):
         # Move agent
         self.move()
 
         # Pick up sugar and spice
         self.pick_up()
+
+        # Update wealth
+        self.update_wealth()
 
         # Trade sugar and spice
         self.trade()
@@ -36,9 +48,9 @@ class Trader(Agent):
 
     def move(self):
         # Get neighborhood
-        neighbours = [i
-                      for i in self.model.grid.get_neighborhood(
-                self.pos, moore=True, include_center=False, radius=self.vision)]
+        neighbours = [i for i in self.model.grid.get_neighborhood(
+            self.pos, moore=True, include_center=False, radius=self.vision
+        )]
 
         # Get cell with most sugar
         max_welfare = -1
@@ -48,7 +60,7 @@ class Trader(Agent):
         for neighbour in neighbours:
             if not self.model.grid.is_cell_empty(neighbour):
                 continue
-            
+
             this_cell = self.model.grid.get_cell_list_contents([neighbour])
             for agent in this_cell:
                 if isinstance(agent, Cell):
@@ -88,16 +100,23 @@ class Trader(Agent):
 
         # Die if sugar is less than 0
         if self.sugar < 0:
-            self.model.grid.remove_agent(self)
-            self.model.schedule.remove(self)
+            self.remove()
 
         # Die if spice is less than 0
         if self.spice < 0:
-            self.model.grid._remove_agent(self.pos, self)
-            self.model.schedule.remove(self)
+            self.remove()
 
     def trade(self):
         pass
-    
+
     def welfare(self, sugar, spice):
-        return (sugar ** self.sugar_weighted * spice ** self.spice_weighted)
+        return sugar ** self.sugar_weight * spice ** self.spice_weight
+
+    def update_wealth(self):
+        self.wealth = self.welfare(self.sugar, self.spice)
+
+    def remove(self):
+        print(self.pos)
+        self.model.grid.remove_agent(self)
+        self.model.schedule.remove(self)
+        del self.model.traders[self.unique_id]
