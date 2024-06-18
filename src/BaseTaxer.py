@@ -1,28 +1,30 @@
+from src.Trader import Trader
+
+
 class BaseTaxer:
-    def __init__(self, tax_steps, distributer, distributer_steps) -> None:
+    def __init__(self, model, tax_steps, tax_rate) -> None:
+        self.model = model
         self.tax_steps = tax_steps
-        self.distributer = distributer(distributer_steps)
-
-        # Storing collected taxes
-        self.taxes_collection = 0
-
-        # Storing current step
+        self.tax_rate = tax_rate
+        self.taxes_collection = {"sugar": 0, "spice": 0}
         self.current_step = 0
 
     def step(self, agents):
-        # Increase current step
         self.current_step += 1
-
-        # Check if it is time to tax
         if self.current_step % self.tax_steps == 0:
-            # Collect taxes
             self.collect_taxes(agents)
 
-            # Reset taxes collection
-            self.taxes_collection = 0
-
-        # Take step for distributer
-        self.distributer.step(agents)
-
     def collect_taxes(self, agents):
-        pass
+        for agent in agents:
+            if isinstance(agent, Trader):
+                sugar_tax = agent.sugar * self.tax_rate
+                spice_tax = agent.spice * self.tax_rate
+                agent.sugar -= sugar_tax
+                agent.spice -= spice_tax
+                self.taxes_collection["sugar"] += sugar_tax
+                self.taxes_collection["spice"] += spice_tax
+                self.model.total_sugar_tax_collected += sugar_tax
+                self.model.total_spice_tax_collected += spice_tax
+
+    def reset_tax(self):
+        self.taxes_collection = {"sugar": 0, "spice": 0}
