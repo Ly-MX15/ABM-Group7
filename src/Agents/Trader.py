@@ -54,20 +54,28 @@ class Trader(Agent):
 
         # Get cell with most sugar
         max_welfare = -1
-        best_position = None
+        best_position = self.pos
         shortest_distance = float('inf')
 
         for neighbour in neighbours:
-            if not self.model.grid.is_cell_empty(neighbour):
+            # Check if another trader is in the cell
+            this_cell = self.model.grid.get_cell_list_contents([neighbour])
+
+            # Check if trader within cell
+            has_agent = False
+            for cells in this_cell:
+                if isinstance(cells, Trader):
+                    has_agent = True
+                    break
+            if has_agent:
                 continue
 
-            this_cell = self.model.grid.get_cell_list_contents([neighbour])
             for agent in this_cell:
                 if isinstance(agent, Cell):
                     # Compute welfare based on sum of current resources and resources in the cell
                     combined_sugar = self.sugar + agent.sugar
                     combined_spice = self.spice + agent.spice
-                    welfare = self.welfare(self, combined_sugar, combined_spice)
+                    welfare = self.welfare(combined_sugar, combined_spice)
                     distance = get_distance(self.pos, neighbour)
 
                     # Update best position
@@ -116,7 +124,7 @@ class Trader(Agent):
         self.wealth = self.welfare(self.sugar, self.spice)
 
     def remove(self):
-        print(self.pos)
         self.model.grid.remove_agent(self)
         self.model.schedule.remove(self)
         del self.model.traders[self.unique_id]
+        self.model.deaths += 1
