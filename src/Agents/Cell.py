@@ -1,5 +1,5 @@
 from mesa import Agent
-from numpy import random
+
 
 class Cell(Agent):
     def __init__(self, unique_id, model, capacities):
@@ -18,5 +18,3 @@ class Cell(Agent):
         # Regenerate sugar
         self.sugar = min(self.sugar + 1, self.capacities[0])
         self.spice = min(self.spice + 1, self.capacities[1])
-
-
