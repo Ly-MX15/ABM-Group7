@@ -68,14 +68,18 @@ average_spice_metabolism_chart = ChartModule(
     data_collector_name='datacollector'
 )
 
+reproduced_chart = ChartModule(
+    [{"Label": "Reproduced", "Color": "Black"}],
+    data_collector_name='datacollector'
+)
+
 server = ModularServer(
     SugarScape,
     [canvas_element, trade_count_chart, average_trade_price_chart, gini_pop,
      deaths_by_age_chart, deaths_by_hunger_chart, average_vision_chart,
-     average_sugar_metabolism_chart, average_spice_metabolism_chart],
+     average_sugar_metabolism_chart, average_spice_metabolism_chart, reproduced_chart],
     "Sugarscape Model",
     {"height": 50, "width": 50, "initial_population": 100}
-
 )
 
 server.port = 8557

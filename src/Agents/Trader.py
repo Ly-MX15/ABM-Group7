@@ -48,13 +48,17 @@ class Trader(Agent):
         # Metabolize sugar and spice
         self.metabolize()
 
+        # Repopulation
+        self.repopulate()
+
+
         # Increment age
         self.age_increase()
 
     def move(self):
         # Get neighborhood
         neighbours = [i for i in self.model.grid.get_neighborhood(
-            self.pos, moore=True, include_center=False, radius=self.vision
+            self.pos, moore=False, include_center=False, radius=self.vision
         )]
 
         # Get cell with most sugar
@@ -137,9 +141,6 @@ class Trader(Agent):
                 if mrs == neighbors_mrs:
                     break
 
-                if mrs == 0 or neighbors_mrs == 0:
-                    break
-
                 # Check who has the higher MRS
                 if mrs > neighbors_mrs:
                     high = self
@@ -150,6 +151,9 @@ class Trader(Agent):
 
                 # Compute the trade price
                 trade_price = sqrt(mrs * neighbors_mrs)
+
+                if trade_price == 0:
+                    break
 
                 # Check if trade price is greater than 1
                 if trade_price > 1:
@@ -185,6 +189,7 @@ class Trader(Agent):
                         'TradePrice': trade_price
                     })
 
+                # No more improvements
                 else:
                     break
 
@@ -210,6 +215,17 @@ class Trader(Agent):
 
         # Check if welfare is improved
         return improved and not_crossed
+
+    def repopulate(self):
+        # Check if trader has enough sugar and spice
+        if (self.sugar >= self.model.repopulate_factor * self.sugar_metabolism
+                and self.spice >= self.model.repopulate_factor * self.spice_metabolism):
+            # Create new trader
+            self.model.repopulation()
+
+            # Reduce sugar and spice
+            self.sugar = self.sugar_metabolism
+            self.spice = self.spice_metabolism
 
     def age_increase(self):
         # Increment age
