@@ -21,6 +21,7 @@ class SugarScape(Model):
         self.height = height
         self.width = width
         self.initial_population = initial_population
+        self.current_step = 0
 
         # Set seed for reproducibility
         random.seed(seed_value)
@@ -29,7 +30,10 @@ class SugarScape(Model):
         self.grid = MultiGrid(self.height, self.width, False)
 
         # Initialize counters
-        self.deaths = 0
+        self.deaths_age = []
+        self.deaths_starved = []
+        self.deaths_age_step = 0
+        self.deaths_starved_step = 0
 
         # Create taxers and distributers
         if tax_scheme == "flat":
@@ -79,7 +83,8 @@ class SugarScape(Model):
             sugar, spice = random.randint(1, 10, 2)
             sugar_metabolism, spice_metabolism = random.randint(1, 4, 2)
             vision = random.randint(1, 4)
-            trader = Trader(id, self, sugar, sugar_metabolism, spice, spice_metabolism, vision)
+            max_age = random.randint(70, 100)
+            trader = Trader(id, self, sugar, sugar_metabolism, spice, spice_metabolism, vision, max_age)
 
             # Place trader on grid
             self.grid.place_agent(trader, (x, y))
@@ -92,22 +97,30 @@ class SugarScape(Model):
             id += 1
 
         self.datacollector = DataCollector(
-            {
-                "Agents": lambda m: m.schedule.get_type_count(Trader),
-                "Deaths": lambda m: m.deaths,
-                "GiniCoefficient": lambda m: calculate_gini(m),
-                "AverageVision": lambda m: average_vision(m),
-                "AverageSugarMetabolism": lambda m: average_sugar_metabolism(m),
-                "AverageSpiceMetabolism": lambda m: average_spice_metabolism(m),
-                "PriceStabilization": lambda m: price_stabilization(m)
-            }
+            model_reporters={
+                "Trade Price": compute_average_trade_price,
+                "Gini": compute_gini,
+                "Number of Trades": compute_trade_counts,
+                "Deaths by Age": compute_deaths_by_age,
+                "Deaths by Hunger": compute_deaths_by_hunger,
+                "Average Vision": compute_average_vision,
+                "Average Sugar Metabolism": compute_average_sugar_metabolism,
+                "Average Spice Metabolism": compute_average_spice_metabolism,
+            },
+            tables={"Trades": ["Step", "TraderHighMRS_ID", "TraderLowMRS_ID", "TradeSugar", "TradeSpice", "TradePrice"]}
         )
 
         self.running = True
         self.datacollector.collect(self)
 
     def step(self):
+        self.current_step += 1
+        self.deaths_age_step = 0
+        self.deaths_starved_step = 0
         self.schedule.step()
+
+        self.deaths_age.append(self.deaths_age_step)
+        self.deaths_starved.append(self.deaths_starved_step)
 
         # Get all trader
         traders = [agent for agent in self.schedule.agents if isinstance(agent, Trader)]
@@ -123,5 +136,5 @@ class SugarScape(Model):
         for i in range(step_count):
             self.step()
 
-
-
+    def get_trade_log(self):
+        return self.datacollector.get_table_dataframe("Trades")

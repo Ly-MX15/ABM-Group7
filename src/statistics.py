@@ -1,35 +1,69 @@
-def calculate_gini(model):
-    # Calculate Gini coefficient based on traders' wealth
-    wealths = [agent.sugar + agent.spice for agent in model.traders.values()]
-    wealths.sort()
-    n = len(wealths)
+def compute_trade_counts(model):
+    trade_data = model.get_trade_log()
+    current_step_trades = trade_data[trade_data["Step"] == model.current_step]
+    return len(current_step_trades)
+
+
+def compute_average_trade_price(model):
+    trade_data = model.get_trade_log()
+    if len(trade_data) == 0:
+        return 0
+    current_step_trades = trade_data[trade_data["Step"] == model.current_step]
+    if len(current_step_trades) == 0:
+        return 0
+    average_price = current_step_trades["TradePrice"].mean()
+    return average_price
+
+
+def compute_gini(model):
+    agent_wealths = [agent.sugar / agent.sugar_metabolism + agent.spice / agent.spice_metabolism for agent in
+                     model.traders.values()]
+    sorted_wealths = sorted(agent_wealths)
+    # plt.hist(sorted_wealths, bins=10)
+    # plt.show()
+    n = len(sorted_wealths)
+    # print(n)
     if n == 0:
         return 0
-    cumulative_wealth = sum(wealths)
-    cumulative_weighted_wealth = sum((i + 1) * wealths[i] for i in range(n))
-    gini_coefficient = (2 * cumulative_weighted_wealth) / (n * cumulative_wealth) - (n + 1) / n
-    return gini_coefficient
+    cumulative_sum = sum((i + 1) * wealth for i, wealth in enumerate(sorted_wealths))
+    total_wealth = sum(sorted_wealths)
+    gini = (2 * cumulative_sum) / (n * total_wealth) - (n + 1) / n
+
+    return gini
 
 
-def average_vision(model):
-    # Calculate average vision of traders
-    visions = [agent.vision for agent in model.traders.values()]
-    return sum(visions) / len(visions) if visions else 0
+def compute_deaths_by_age(model):
+    """Return the number of deaths by age for the current step."""
+    return model.deaths_age[-1] if model.deaths_age else 0
 
 
-def average_sugar_metabolism(model):
-    # Calculate average sugar metabolism of traders
-    sugar_metabolisms = [agent.sugar_metabolism for agent in model.traders.values()]
-    return sum(sugar_metabolisms) / len(sugar_metabolisms) if sugar_metabolisms else 0
+def compute_deaths_by_hunger(model):
+    """Return the number of deaths by hunger for the current step."""
+    return model.deaths_starved[-1] if model.deaths_starved else 0
 
 
-def average_spice_metabolism(model):
-    # Calculate average spice metabolism of traders
-    spice_metabolisms = [agent.spice_metabolism for agent in model.traders.values()]
-    return sum(spice_metabolisms) / len(spice_metabolisms) if spice_metabolisms else 0
+def compute_average_vision(model):
+    """Compute the average vision of all living Trader agents."""
+    traders = [agent for agent in model.traders.values()]
+    if len(traders) == 0:
+        return 0
+    average_vision = sum(trader.vision for trader in traders) / len(traders)
+    return average_vision
 
 
-def price_stabilization(model):
-    # Calculate price stabilization (example: average price over all traders)
-    prices = [agent.price for agent in model.traders.values()]
-    return sum(prices) / len(prices) if prices else 0
+def compute_average_sugar_metabolism(model):
+    """Compute the average sugar metabolism of all living Trader agents."""
+    traders = [agent for agent in model.traders.values()]
+    if len(traders) == 0:
+        return 0
+    average_sugar_metabolism = sum(trader.sugar_metabolism for trader in traders) / len(traders)
+    return average_sugar_metabolism
+
+
+def compute_average_spice_metabolism(model):
+    """Compute the average spice metabolism of all living Trader agents."""
+    traders = [agent for agent in model.traders.values()]
+    if len(traders) == 0:
+        return 0
+    average_spice_metabolism = sum(trader.spice_metabolism for trader in traders) / len(traders)
+    return average_spice_metabolism

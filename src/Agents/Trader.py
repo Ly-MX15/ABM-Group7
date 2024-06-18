@@ -1,5 +1,5 @@
 from mesa import Agent
-from numpy import random
+from numpy import random, sqrt
 from .Cell import Cell
 
 
@@ -9,7 +9,7 @@ def get_distance(pos1, pos2):
 
 class Trader(Agent):
     def __init__(self, unique_id, model, sugar, sugar_metabolism,
-                 spice, spice_metabolism, vision):
+                 spice, spice_metabolism, vision, max_age):
         super().__init__(unique_id, model)
 
         # Set initial parameters
@@ -18,6 +18,8 @@ class Trader(Agent):
         self.spice = spice
         self.spice_metabolism = spice_metabolism
         self.vision = vision
+        self.max_age = max_age
+        self.age = 0
 
         # Weight for both sugar and spice when moving
         self.spice_weight = sugar_metabolism / (sugar_metabolism + spice_metabolism)
@@ -45,6 +47,9 @@ class Trader(Agent):
 
         # Metabolize sugar and spice
         self.metabolize()
+
+        # Increment age
+        self.age_increase()
 
     def move(self):
         # Get neighborhood
@@ -107,15 +112,113 @@ class Trader(Agent):
         self.spice -= self.spice_metabolism
 
         # Die if sugar is less than 0
-        if self.sugar < 0:
+        if self.sugar < 0 or self.spice < 0:
             self.remove()
-
-        # Die if spice is less than 0
-        if self.spice < 0:
-            self.remove()
+            self.model.deaths_starved_step += 1
 
     def trade(self):
-        pass
+        # Get neighborhood
+        neighbors = self.model.grid.get_neighbors(self.pos, moore=False, include_center=False, radius=1)
+        random.shuffle(neighbors)
+
+        # Loop through neighbors
+        for neighbors in neighbors:
+            # Skip if not a trader
+            if not isinstance(neighbors, Trader):
+                continue
+
+            # Allows for continuous trading
+            while True:
+                # Compute MRS
+                mrs = self.mrs()
+                neighbors_mrs = neighbors.mrs()
+
+                # No more trading if MRS are equal
+                if mrs == neighbors_mrs:
+                    break
+
+                if mrs == 0 or neighbors_mrs == 0:
+                    break
+
+                # Check who has the higher MRS
+                if mrs > neighbors_mrs:
+                    high = self
+                    low = neighbors
+                else:
+                    high = neighbors
+                    low = self
+
+                # Compute the trade price
+                trade_price = sqrt(mrs * neighbors_mrs)
+
+                # Check if trade price is greater than 1
+                if trade_price > 1:
+                    trade_spice = trade_price
+                    trade_sugar = 1
+                else:
+                    trade_spice = 1
+                    trade_sugar = 1 / trade_price
+
+                # Update based on MRS
+                trade_sugar = min(trade_sugar, low.sugar)
+                trade_spice = min(trade_spice, high.spice)
+
+                # No more sugar/spice to trade
+                if trade_sugar <= 0 or trade_spice <= 0:
+                    break
+
+                # Check if trade improves welfare
+                if self.improve_welfare(high, low, trade_sugar, trade_spice):
+                    # Trade sugar and spice
+                    high.sugar += trade_sugar
+                    high.spice -= trade_spice
+                    low.sugar -= trade_sugar
+                    low.spice += trade_spice
+
+                    # Update table
+                    self.model.datacollector.add_table_row("Trades", {
+                        'Step': self.model.current_step,
+                        'TraderHighMRS_ID': high.unique_id,
+                        'TraderLowMRS_ID': low.unique_id,
+                        'TradeSugar': trade_sugar,
+                        'TradeSpice': trade_spice,
+                        'TradePrice': trade_price
+                    })
+
+                else:
+                    break
+
+    def mrs(self):
+        return (self.sugar_metabolism * self.spice) / (self.spice_metabolism * self.sugar + 1e-9)
+
+    def improve_welfare(self, high, low, trade_sugar, trade_spice):
+        # Compute welfare
+        high_sugar = high.sugar + trade_sugar
+        high_spice = high.spice - trade_spice
+        low_sugar = low.sugar - trade_sugar
+        low_spice = low.spice + trade_spice
+
+        # Compute welfare
+        high_welfare = self.welfare(high_sugar, high_spice)
+        low_welfare = self.welfare(low_sugar, low_spice)
+
+        # Check if welfare is improved
+        improved = high_welfare > high.wealth and low_welfare > low.wealth
+
+        # Make sure that MRS is not crossed
+        not_crossed = high_welfare > low_welfare
+
+        # Check if welfare is improved
+        return improved and not_crossed
+
+    def age_increase(self):
+        # Increment age
+        self.age += 1
+
+        # Check if age is greater than max age
+        if self.age >= self.max_age:
+            self.remove()
+            self.model.deaths_age_step += 1
 
     def welfare(self, sugar, spice):
         return sugar ** self.sugar_weight * spice ** self.spice_weight
@@ -127,4 +230,3 @@ class Trader(Agent):
         self.model.grid.remove_agent(self)
         self.model.schedule.remove(self)
         del self.model.traders[self.unique_id]
-        self.model.deaths += 1
