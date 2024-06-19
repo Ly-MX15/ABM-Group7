@@ -14,6 +14,16 @@ def compute_average_trade_price(model):
     average_price = current_step_trades["TradePrice"].mean()
     return average_price
 
+def compute_std_trade_price(model):
+    trade_data = model.get_trade_log()
+    if len(trade_data) == 0:
+        return 0
+    current_step_trades = trade_data[trade_data["Step"] == model.current_step]
+    if len(current_step_trades) == 0:
+        return 0
+    std_price = current_step_trades["TradePrice"].std()
+    return std_price
+
 
 def compute_gini(model):
     agent_wealths = [agent.sugar / agent.sugar_metabolism + agent.spice / agent.spice_metabolism for agent in
