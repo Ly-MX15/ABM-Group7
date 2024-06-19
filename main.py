@@ -1,14 +1,18 @@
 from src.SugarScape import SugarScape
-from src.Cell import Cell
-from src.Trader import Trader
+from src.Agents.Cell import Cell
+from src.Agents.Trader import Trader
 from mesa.visualization import CanvasGrid, ModularServer
 from mesa.visualization.modules import ChartModule
+
 
 def agent_portrayal(agent):
     if agent is None:
         return
 
-    portrayal = {"Filled": "true", "r": 0.5, "w": 1, "h": 1}
+    portrayal = {"Filled": "true",
+                 "r": 0.5,
+                 "w": 1,
+                 "h": 1}
 
     if type(agent) is Trader:
         portrayal["Color"] = "red"
@@ -16,77 +20,68 @@ def agent_portrayal(agent):
         portrayal["Shape"] = "circle"
     elif type(agent) is Cell:
         portrayal["Shape"] = "rect"
+        portrayal["Color"] = "green" if agent.sugar > 0 and agent.spice > 0 else "black"
         portrayal["Layer"] = 0
-
-        # Selecting Color
-        if agent.sugar == 0 and agent.spice == 0:
-            portrayal["Color"] = "black"
-        else:
-            portrayal["Color"] = "orange" if agent.sugar > agent.spice else "green"
 
     return portrayal
 
+
 canvas_element = CanvasGrid(agent_portrayal, 50, 50, 500, 500)
 
-# Add new charts for the additional data
-death_chart = ChartModule(
-    [{"Label": "Deaths", "Color": "Black"}],
+trade_count_chart = ChartModule(
+    [{"Label": "Number of Trades", "Color": "Blue"}],
     data_collector_name='datacollector'
 )
 
-gini_chart = ChartModule(
-    [{"Label": "GiniCoefficient", "Color": "Black"}],
+average_trade_price_chart = ChartModule(
+    [{"Label": "Trade Price", "Color": "Red"}],
     data_collector_name='datacollector'
 )
 
-vision_chart = ChartModule(
-    [{"Label": "AverageVision", "Color": "Black"}],
+gini_pop = ChartModule(
+    [{"Label": "Gini", "Color": "Black"}],
     data_collector_name='datacollector'
 )
 
-metabolism_chart = ChartModule(
-    [
-        {"Label": "AverageSugarMetabolism", "Color": "Blue"},
-        {"Label": "AverageSpiceMetabolism", "Color": "Red"}
-    ],
+deaths_by_age_chart = ChartModule(
+    [{"Label": "Deaths by Age", "Color": "Green"}],
     data_collector_name='datacollector'
 )
 
-price_chart = ChartModule(
-    [{"Label": "PriceStabilization", "Color": "Black"}],
+deaths_by_hunger_chart = ChartModule(
+    [{"Label": "Deaths by Hunger", "Color": "Orange"}],
+    data_collector_name='datacollector'
+)
+
+average_vision_chart = ChartModule(
+    [{"Label": "Average Vision", "Color": "Purple"}],
+    data_collector_name='datacollector'
+)
+
+average_sugar_metabolism_chart = ChartModule(
+    [{"Label": "Average Sugar Metabolism", "Color": "Pink"}],
+    data_collector_name='datacollector'
+)
+
+average_spice_metabolism_chart = ChartModule(
+    [{"Label": "Average Spice Metabolism", "Color": "Brown"}],
+    data_collector_name='datacollector'
+)
+
+reproduced_chart = ChartModule(
+    [{"Label": "Reproduced", "Color": "Black"}],
     data_collector_name='datacollector'
 )
 
 server = ModularServer(
     SugarScape,
-    [canvas_element, death_chart, gini_chart, vision_chart, metabolism_chart, price_chart],
+    [canvas_element, trade_count_chart, average_trade_price_chart, gini_pop,
+     deaths_by_age_chart, deaths_by_hunger_chart, average_vision_chart,
+     average_sugar_metabolism_chart, average_spice_metabolism_chart, reproduced_chart],
     "Sugarscape Model",
-    {"height": 50, "width": 50, "initial_population": 100},
+    {"height": 50, "width": 50, "initial_population": 100}
 )
+
+server.port = 8557
 server.launch()
 
-import matplotlib.pyplot as plt
-import pandas as pd
-
-# Run the model for 300 steps
-model = SugarScape(height=50, width=50, initial_population=100)
-for i in range(300):
-    model.step()
-
-# Collect data
-data = model.datacollector.get_model_vars_dataframe()
-
-# Plot data
-def plot_and_save(data, y_label, title, filename):
-    plt.figure()
-    data.plot()
-    plt.ylabel(y_label)
-    plt.title(title)
-    plt.savefig(filename)
-    plt.close()
-
-plot_and_save(data[['Deaths']], 'Number of Deaths', 'Deaths over Time', 'deaths_over_time.png')
-plot_and_save(data[['GiniCoefficient']], 'Gini Coefficient', 'Gini Coefficient over Time', 'gini_coefficient_over_time.png')
-plot_and_save(data[['AverageVision']], 'Average Vision', 'Average Vision over Time', 'average_vision_over_time.png')
-plot_and_save(data[['AverageSugarMetabolism', 'AverageSpiceMetabolism']], 'Average Metabolism', 'Average Metabolism over Time', 'average_metabolism_over_time.png')
-plot_and_save(data[['PriceStabilization']], 'Price Stabilization', 'Price Stabilization over Time', 'price_stabilization_over_time.png')

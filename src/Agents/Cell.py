@@ -1,5 +1,5 @@
 from mesa import Agent
-from numpy import random
+
 
 class Cell(Agent):
     def __init__(self, unique_id, model, capacities):
