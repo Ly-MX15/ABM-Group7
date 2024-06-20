@@ -1,16 +1,34 @@
+# MESA imports
 from mesa import Model
 from mesa.space import MultiGrid
 from mesa.time import RandomActivationByType
 from mesa.datacollection import DataCollector
-from numpy import random
+
+# Agents
 from src.Agents.Trader import Trader
 from src.Agents.Cell import Cell
+
+# Taxers
 from src.Taxers.BaseTaxer import BaseTaxer
-from src.Distributers.BaseDistributer import BaseDistributer
 from src.Taxers.ProgressiveTaxer import ProgressiveTaxer
+from src.Taxers.RegressiveTaxer import RegressiveTaxer
+from src.Taxers.LuxuryTaxer import LuxuryTaxer
+
+# Distributers
+from src.Distributers.BaseDistributer import BaseDistributer
 from src.Distributers.ProgressiveDistributer import ProgressiveDistributer
+from src.Distributers.NeedsBasedDistributer import NeedsBasedDistributer
+from src.Distributers.RandomDistributer import RandomDistributer
+
+# Distributers
+
+
+# Statistics
 from .statistics import *
+
+# Numpy
 import numpy as np
+from numpy import random
 
 
 class SugarScape(Model):
@@ -42,6 +60,10 @@ class SugarScape(Model):
             self.taxer = BaseTaxer(tax_steps, tax_rate)
         elif tax_scheme == "progressive":
             self.taxer = ProgressiveTaxer(tax_steps, tax_rate)
+        elif tax_scheme == "regressive":
+            self.taxer = RegressiveTaxer(tax_steps, tax_rate)
+        elif tax_scheme == "luxury":
+            self.taxer = LuxuryTaxer(tax_steps, tax_rate)
         else:
             raise ValueError("Invalid tax scheme")
 
@@ -50,6 +72,10 @@ class SugarScape(Model):
             self.distributer = BaseDistributer(distributer_steps)
         elif distributer_scheme == "progressive":
             self.distributer = ProgressiveDistributer(distributer_steps)
+        elif distributer_scheme == "needs":
+            self.distributer = NeedsBasedDistributer(distributer_steps)
+        elif distributer_scheme == "random":
+            self.distributer = RandomDistributer(distributer_steps)
         else:
             raise ValueError("Invalid distributer scheme")
 

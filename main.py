@@ -102,10 +102,10 @@ server = ModularServer(
         "metabolism_mean": 3,
         "vision_mean": 3,
         "max_age_mean": 70,
-        "tax_scheme": "progressive",
+        "tax_scheme": "luxury",
         "tax_steps": 10,
         "tax_rate": 0.1,
-        "distributer_scheme": "flat",
+        "distributer_scheme": "needs",
         "distributer_steps": 20,
         "repopulate_factor": 10
     }
