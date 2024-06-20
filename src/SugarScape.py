@@ -9,6 +9,7 @@ from src.Agents.Cell import Cell
 from src.Taxers.BaseTaxer import BaseTaxer
 from src.Distributers.BaseDistributer import BaseDistributer
 from src.Taxers.ProgressiveTaxer import ProgressiveTaxer
+from src.Taxers.RegressiveTaxer import RegressiveTaxer
 from src.Distributers.ProgressiveDistributer import ProgressiveDistributer
 from .statistics import *
 
@@ -17,6 +18,7 @@ class SugarScape(Model):
     def __init__(self, height=50, width=50, initial_population=300, sugar_metabolism_mean=3, spice_metabolism_mean=3,
                  vision_mean=5,max_age_mean=10000,tax_scheme="flat", tax_steps=10, tax_rate=0.2, distributer_scheme="flat", 
                  distributer_steps=50,repopulate_factor=10000, seed_value=42):
+
         super().__init__()
         # Set parameters
         self.height = height
@@ -47,6 +49,8 @@ class SugarScape(Model):
             self.taxer = BaseTaxer(tax_steps, tax_rate)
         elif tax_scheme == "progressive":
             self.taxer = ProgressiveTaxer(tax_steps, tax_rate)
+        elif tax_scheme == "regressive":
+            self.taxer = RegressiveTaxer(tax_steps, tax_rate)
         else:
             raise ValueError("Invalid tax scheme")
 
