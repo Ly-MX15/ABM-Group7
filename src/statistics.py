@@ -1,3 +1,4 @@
+import numpy as np
 def compute_trade_counts(model):
     trade_data = model.get_trade_log()
     current_step_trades = trade_data[trade_data["Step"] == model.current_step]
@@ -11,8 +12,9 @@ def compute_average_trade_price(model):
     current_step_trades = trade_data[trade_data["Step"] == model.current_step]
     if len(current_step_trades) == 0:
         return 0
-    average_price = current_step_trades["TradePrice"].mean()
-    return average_price
+    log_trade_prices = np.log10(current_step_trades["TradePrice"])
+    average_log_price = log_trade_prices.mean()
+    return average_log_price
 
 def compute_std_trade_price(model):
     trade_data = model.get_trade_log()
@@ -21,9 +23,9 @@ def compute_std_trade_price(model):
     current_step_trades = trade_data[trade_data["Step"] == model.current_step]
     if len(current_step_trades) == 0:
         return 0
-    std_price = current_step_trades["TradePrice"].std()
-    return std_price
-
+    log_trade_prices = np.log10(current_step_trades["TradePrice"])
+    std_log_price = log_trade_prices.std()
+    return std_log_price
 
 def compute_gini(model):
     agent_wealths = [agent.sugar / agent.sugar_metabolism + agent.spice / agent.spice_metabolism for agent in

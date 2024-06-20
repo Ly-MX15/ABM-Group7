@@ -14,9 +14,9 @@ from .statistics import *
 
 
 class SugarScape(Model):
-    def __init__(self, height=50, width=50, initial_population=200, sugar_metabolism_mean=3, spice_metabolism_mean=3,
-                 vision_mean=5,max_age_mean=100,tax_scheme="flat", tax_steps=50, tax_rate=0, distributer_scheme="flat", 
-                 distributer_steps=50,repopulate_factor=20, seed_value=42):
+    def __init__(self, height=50, width=50, initial_population=300, sugar_metabolism_mean=3, spice_metabolism_mean=3,
+                 vision_mean=5,max_age_mean=10000,tax_scheme="flat", tax_steps=10, tax_rate=0.2, distributer_scheme="flat", 
+                 distributer_steps=50,repopulate_factor=10000, seed_value=42):
         super().__init__()
         # Set parameters
         self.height = height
@@ -59,7 +59,7 @@ class SugarScape(Model):
 
         # Create cells
         id = 0
-        high_right = 15
+        high_right = 19
         high_left = 5
         low_right = 3
         low_left = 0
@@ -93,7 +93,7 @@ class SugarScape(Model):
             # Instantiate trader using Poisson distribution
             sugar_metabolism = max(1, np.random.poisson(self.sugar_metabolism_mean))
             spice_metabolism = max(1, np.random.poisson(self.spice_metabolism_mean))
-            sugar, spice = sugar_metabolism * 2, spice_metabolism * 2
+            sugar, spice = sugar_metabolism * 10, spice_metabolism * 10
             vision = max(1, np.random.poisson(self.vision_mean))
             max_age = max(70, np.random.poisson(self.max_age_mean))
             trader = Trader(id, self, sugar, sugar_metabolism, spice, spice_metabolism, vision, max_age)
