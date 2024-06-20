@@ -95,12 +95,20 @@ server = ModularServer(
      deaths_by_age_chart, deaths_by_hunger_chart, average_vision_chart,
      average_sugar_metabolism_chart, average_spice_metabolism_chart, reproduced_chart],
     "Sugarscape Model",
-    {"height": 50, "width": 50, 
-     "initial_population": 300,
-     'tax_scheme':"flat", 
-     'distributer_scheme':"flat",
-     'tax_steps':5,
-     'tax_rate':0.3}
+    {
+        "height": 50,
+        "width": 50,
+        "initial_population": 300,
+        "metabolism_mean": 3,
+        "vision_mean": 3,
+        "max_age_mean": 70,
+        "tax_scheme": "progressive",
+        "tax_steps": 10,
+        "tax_rate": 0.1,
+        "distributer_scheme": "flat",
+        "distributer_steps": 20,
+        "repopulate_factor": 10
+    }
 )
 
 server.port = 8470

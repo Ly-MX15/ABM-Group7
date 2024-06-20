@@ -22,8 +22,8 @@ class Trader(Agent):
         self.age = 0
 
         # Weight for both sugar and spice when moving
-        self.spice_weight = sugar_metabolism / (sugar_metabolism + spice_metabolism)
-        self.sugar_weight = 1 - self.spice_weight
+        self.sugar_weight = sugar_metabolism / (sugar_metabolism + spice_metabolism)
+        self.spice_weight = 1 - self.sugar_weight
 
         # Set initial wealth
         self.wealth = 0
@@ -158,7 +158,6 @@ class Trader(Agent):
                 trade_price = sqrt(mrs * neighbors_mrs)
 
                 if trade_price == 0:
-                    print(1)
                     break
 
                 # Check if trade price is greater than 1
@@ -232,7 +231,6 @@ class Trader(Agent):
                 probability_of_repopulate =  np.log(max((self.sugar/mean_sugar_metabolism),
                                                         (self.spice/mean_spice_metabolism))
                                                     /self.model.repopulate_factor)
-                #print(probability_of_repopulate)
                 if random.random() < probability_of_repopulate:
                     # Create new trader
                     self.model.repopulation()
