@@ -1,9 +1,14 @@
 import numpy as np
-def compute_trade_counts(model):
+def compute_std_trade_price(model):
     trade_data = model.get_trade_log()
+    if len(trade_data) == 0:
+        return 0
     current_step_trades = trade_data[trade_data["Step"] == model.current_step]
-    return len(current_step_trades)
-
+    if len(current_step_trades) == 0:
+        return 0
+    log_trade_prices = np.log(current_step_trades["TradePrice"])
+    std_log_price = np.std(log_trade_prices)
+    return std_log_price
 
 def compute_average_trade_price(model):
     trade_data = model.get_trade_log()
@@ -12,20 +17,18 @@ def compute_average_trade_price(model):
     current_step_trades = trade_data[trade_data["Step"] == model.current_step]
     if len(current_step_trades) == 0:
         return 0
-    log_trade_prices = np.log10(current_step_trades["TradePrice"])
-    average_log_price = log_trade_prices.mean()
-    return average_log_price
+    log_trade_prices = np.log(current_step_trades["TradePrice"])
+    average_price = np.mean(log_trade_prices)
+    return average_price
 
-def compute_std_trade_price(model):
+def compute_trade_counts(model):
     trade_data = model.get_trade_log()
-    if len(trade_data) == 0:
-        return 0
     current_step_trades = trade_data[trade_data["Step"] == model.current_step]
-    if len(current_step_trades) == 0:
-        return 0
-    log_trade_prices = np.log10(current_step_trades["TradePrice"])
-    std_log_price = log_trade_prices.std()
-    return std_log_price
+    return len(current_step_trades)
+
+
+
+
 
 def compute_gini(model):
     agent_wealths = [agent.sugar / agent.sugar_metabolism + agent.spice / agent.spice_metabolism for agent in
@@ -47,12 +50,17 @@ def compute_gini(model):
 def compute_deaths_by_age(model):
     """Return the number of deaths by age for the current step."""
     return model.deaths_age[-1] if model.deaths_age else 0
-
+def compute_average_wealth(model):
+    """Return the number of deaths by age for the current step."""
+    return model.averagewealth[-1] if model.averagewealth else 0
 
 def compute_deaths_by_hunger(model):
     """Return the number of deaths by hunger for the current step."""
     return model.deaths_starved[-1] if model.deaths_starved else 0
 
+def compute_repopulation(model):
+    """Return the number of deaths by hunger for the current step."""
+    return model.reproduced[-1] if model.reproduced else 0
 
 def compute_average_vision(model):
     """Compute the average vision of all living Trader agents."""

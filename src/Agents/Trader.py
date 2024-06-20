@@ -1,7 +1,7 @@
 from mesa import Agent
 from numpy import random, sqrt
 from .Cell import Cell
-
+import numpy as np
 
 def get_distance(pos1, pos2):
     return (pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2
@@ -158,6 +158,7 @@ class Trader(Agent):
                 trade_price = sqrt(mrs * neighbors_mrs)
 
                 if trade_price == 0:
+                    print(1)
                     break
 
                 # Check if trade price is greater than 1
@@ -222,15 +223,24 @@ class Trader(Agent):
         return improved and not_crossed
 
     def repopulate(self):
-        # Check if trader has enough sugar and spice
-        if (self.sugar >= self.model.repopulate_factor * self.sugar_metabolism
-                and self.spice >= self.model.repopulate_factor * self.spice_metabolism):
-            # Create new trader
-            self.model.repopulation()
+        #if False:
+            # Check if trader has enough sugar and spice
+            mean_sugar_metabolism = 2.5 + random.random()
+            mean_spice_metabolism = 2.5 + random.random()
+            if (self.sugar >= self.model.repopulate_factor * mean_sugar_metabolism
+                    and self.spice >= self.model.repopulate_factor * mean_spice_metabolism):
+                probability_of_repopulate =  np.log(max((self.sugar/mean_sugar_metabolism),
+                                                        (self.spice/mean_spice_metabolism))
+                                                    /self.model.repopulate_factor)
+                #print(probability_of_repopulate)
+                if random.random() < probability_of_repopulate:
+                    # Create new trader
+                    self.model.repopulation()
 
-            # Reduce sugar and spice
-            self.sugar = self.sugar_metabolism
-            self.spice = self.spice_metabolism
+                    repopulate_loss_ratio = 0.5
+                    # Reduce sugar and spice
+                    self.sugar *= 1 - repopulate_loss_ratio
+                    self.spice *= 1 - repopulate_loss_ratio
 
     def age_increase(self):
         # Increment age
@@ -246,4 +256,5 @@ class Trader(Agent):
 
     def update_wealth(self):
         self.wealth = self.welfare(self.sugar, self.spice)
+        self.model.wealth_step.append(self.wealth)
 

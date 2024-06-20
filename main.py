@@ -28,18 +28,18 @@ def agent_portrayal(agent):
 
 canvas_element = CanvasGrid(agent_portrayal, 50, 50, 500, 500)
 
+trader_count_chart = ChartModule(
+    [{"Label": "Trader Count", "Color": "Yellow"}],
+    data_collector_name='datacollector'
+)
+
 trade_count_chart = ChartModule(
     [{"Label": "Number of Trades", "Color": "Blue"}],
     data_collector_name='datacollector'
 )
 
 average_trade_price_chart = ChartModule(
-    [{"Label": "Average Trading Price", "Color": "Red"}],
-    data_collector_name='datacollector'
-)
-
-std_trade_price_chart = ChartModule(
-    [{"Label": "Standard Deviation of Trading Price", "Color": "Magenta"}],
+    [{"Label": "Trade Price", "Color": "Red"}],
     data_collector_name='datacollector'
 )
 
@@ -63,6 +63,12 @@ average_vision_chart = ChartModule(
     data_collector_name='datacollector'
 )
 
+average_wealth_chart = ChartModule(
+    [{"Label": "Average Wealth", "Color": "Purple"}],
+    data_collector_name='datacollector'
+)
+
+
 average_sugar_metabolism_chart = ChartModule(
     [{"Label": "Average Sugar Metabolism", "Color": "Pink"}],
     data_collector_name='datacollector'
@@ -78,20 +84,25 @@ reproduced_chart = ChartModule(
     data_collector_name='datacollector'
 )
 
-living_agents_chart = ChartModule(
-    [{"Label": "Living Agents Count", "Color": "Orange"}],
+Std_trade_price_chart = ChartModule(
+    [{"Label": "Std Price", "Color": "Red"}],
     data_collector_name='datacollector'
 )
 
 server = ModularServer(
     SugarScape,
-    [canvas_element, trade_count_chart, living_agents_chart, average_trade_price_chart, std_trade_price_chart, gini_pop,
+    [canvas_element, Std_trade_price_chart, average_wealth_chart, trader_count_chart, trade_count_chart, average_trade_price_chart, gini_pop,
      deaths_by_age_chart, deaths_by_hunger_chart, average_vision_chart,
      average_sugar_metabolism_chart, average_spice_metabolism_chart, reproduced_chart],
     "Sugarscape Model",
-    {"height": 50, "width": 50, "initial_population": 300}
+    {"height": 50, "width": 50, 
+     "initial_population": 300,
+     'tax_scheme':"flat", 
+     'distributer_scheme':"flat",
+     'tax_steps':5,
+     'tax_rate':0.3}
 )
 
-server.port = 8557
+server.port = 8470
 server.launch()
 

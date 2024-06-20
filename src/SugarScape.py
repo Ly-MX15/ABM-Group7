@@ -2,23 +2,21 @@ from mesa import Model
 from mesa.space import MultiGrid
 from mesa.time import RandomActivationByType
 from mesa.datacollection import DataCollector
-import numpy as np
 from numpy import random
 from src.Agents.Trader import Trader
 from src.Agents.Cell import Cell
 from src.Taxers.BaseTaxer import BaseTaxer
 from src.Distributers.BaseDistributer import BaseDistributer
 from src.Taxers.ProgressiveTaxer import ProgressiveTaxer
-from src.Taxers.RegressiveTaxer import RegressiveTaxer
 from src.Distributers.ProgressiveDistributer import ProgressiveDistributer
 from .statistics import *
+import numpy as np
 
 
 class SugarScape(Model):
-    def __init__(self, height=50, width=50, initial_population=300, sugar_metabolism_mean=3, spice_metabolism_mean=3,
-                 vision_mean=5,max_age_mean=10000,tax_scheme="flat", tax_steps=10, tax_rate=0.2, distributer_scheme="flat", 
-                 distributer_steps=50,repopulate_factor=10000, seed_value=42):
-
+    def __init__(self, height=50, width=50, initial_population=100,
+                 tax_scheme="flat", tax_steps=10, tax_rate=0.2, distributer_scheme="flat", distributer_steps=20,
+                 repopulate_factor=10, seed_value=42):
         super().__init__()
         # Set parameters
         self.height = height
@@ -26,10 +24,6 @@ class SugarScape(Model):
         self.initial_population = initial_population
         self.current_step = 0
         self.repopulate_factor = repopulate_factor
-        self.sugar_metabolism_mean = sugar_metabolism_mean
-        self.spice_metabolism_mean = spice_metabolism_mean
-        self.vision_mean = vision_mean
-        self.max_age_mean = max_age_mean
 
         # Set seed for reproducibility
         random.seed(seed_value)
@@ -42,15 +36,16 @@ class SugarScape(Model):
         self.deaths_starved = []
         self.deaths_age_step = 0
         self.deaths_starved_step = 0
-        self.reproduced = 0
+        self.reproduced = []
+        self.reproduced_step = 0
+        self.averagewealth = []
+        self.wealth_step = []
 
         # Create taxers and distributers
         if tax_scheme == "flat":
             self.taxer = BaseTaxer(tax_steps, tax_rate)
         elif tax_scheme == "progressive":
             self.taxer = ProgressiveTaxer(tax_steps, tax_rate)
-        elif tax_scheme == "regressive":
-            self.taxer = RegressiveTaxer(tax_steps, tax_rate)
         else:
             raise ValueError("Invalid tax scheme")
 
@@ -63,21 +58,23 @@ class SugarScape(Model):
 
         # Create cells
         id = 0
-        high_right = 19
-        high_left = 5
-        low_right = 3
-        low_left = 0
         for content, (x, y) in self.grid.coord_iter():
+            # mean = 4
+            low_low = 2
+            low_high = 4
+            high_low = 4
+            high_high = 8
             # Define capacities and reproduction rates based on location
             if x < self.width // 2 and y < self.height // 2:  # Left Upper
-                capacities = [np.random.randint(high_left,high_right), np.random.randint(low_left, low_right)]
+                capacities = [random.randint(high_low, high_high), random.randint(low_low, low_high)]
             elif x < self.width // 2 and y >= self.height // 2:  # Left Lower
-                capacities = [np.random.randint(high_left,high_right), np.random.randint(low_left, low_right)]
+                capacities = [random.randint(high_low, high_high), random.randint(low_low, low_high)]
             elif x >= self.width // 2 and y < self.height // 2:  # Right Upper
-                capacities = [np.random.randint(low_left, low_right), np.random.randint(high_left,high_right)]
+                capacities = [random.randint(low_low, low_high), random.randint(high_low, high_high)]
             else:  # Right Lower
-                capacities = [np.random.randint(low_left, low_right), np.random.randint(high_left,high_right)]
+                capacities = [random.randint(low_low, low_high), random.randint(high_low, high_high)]
 
+            #capacities = [random.randint(1, 7), random.randint(1, 7)]
             cell = Cell(id, self, capacities)
 
             # Place cell on grid
@@ -91,15 +88,17 @@ class SugarScape(Model):
         self.traders = {}
         for i in range(self.initial_population):
             # Random position
-            x = np.random.randint(0, self.width)
-            y = np.random.randint(0, self.height)
+            x = random.randint(0, self.width)
+            y = random.randint(0, self.height)
 
-            # Instantiate trader using Poisson distribution
-            sugar_metabolism = max(1, np.random.poisson(self.sugar_metabolism_mean))
-            spice_metabolism = max(1, np.random.poisson(self.spice_metabolism_mean))
-            sugar, spice = sugar_metabolism * 10, spice_metabolism * 10
-            vision = max(1, np.random.poisson(self.vision_mean))
-            max_age = max(70, np.random.poisson(self.max_age_mean))
+            # Instantiate trader
+            sugar, spice = random.randint(10, 20, 2)
+            #sugar, spice = 15,15
+            sugar_metabolism, spice_metabolism = random.randint(3, 5, 2)
+            vision = random.randint(2, 4)
+            max_age = random.randint(70, 150)
+            #max_age = 1000
+            
             trader = Trader(id, self, sugar, sugar_metabolism, spice, spice_metabolism, vision, max_age)
 
             # Place trader on grid
@@ -114,17 +113,18 @@ class SugarScape(Model):
 
         self.datacollector = DataCollector(
             model_reporters={
-                "Average Trading Price": compute_average_trade_price,
-                "Standard Deviation of Trading Price": compute_std_trade_price,
+                "Trade Price": compute_average_trade_price,
+                "Std Price":compute_std_trade_price,
                 "Gini": compute_gini,
-                "Living Agents Count": lambda m: len(m.traders),
                 "Number of Trades": compute_trade_counts,
                 "Deaths by Age": compute_deaths_by_age,
                 "Deaths by Hunger": compute_deaths_by_hunger,
+                "Average Wealth": compute_average_wealth,
                 "Average Vision": compute_average_vision,
                 "Average Sugar Metabolism": compute_average_sugar_metabolism,
                 "Average Spice Metabolism": compute_average_spice_metabolism,
-                "Reproduced": lambda m: m.reproduced
+                "Reproduced": compute_repopulation,
+                "Trader Count": lambda m: len(m.traders),
             },
             tables={"Trades": ["Step", "TraderHighMRS_ID", "TraderLowMRS_ID", "TradeSugar", "TradeSpice", "TradePrice"]}
         )
@@ -136,11 +136,14 @@ class SugarScape(Model):
         self.current_step += 1
         self.deaths_age_step = 0
         self.deaths_starved_step = 0
+        self.reproduced_step = 0
+        self.wealth_step = []
         self.schedule.step()
 
         self.deaths_age.append(self.deaths_age_step)
         self.deaths_starved.append(self.deaths_starved_step)
-
+        self.reproduced.append(self.reproduced_step)
+        self.averagewealth.append(np.mean(self.wealth_step))
         # Get all trader
         traders = [agent for agent in self.schedule.agents if isinstance(agent, Trader)]
 
@@ -164,20 +167,18 @@ class SugarScape(Model):
         del self.traders[agent.unique_id]
 
     def repopulation(self):
-        # Use Poisson distribution to create set of parameters
-        sugar_metabolism = max(1, np.random.poisson(self.sugar_metabolism_mean))
-        spice_metabolism = max(1, np.random.poisson(self.spice_metabolism_mean))
-        sugar, spice = sugar_metabolism * 5, spice_metabolism * 5
-        vision = max(1, np.random.poisson(self.vision_mean))
-        max_age = max(70, np.random.poisson(self.max_age_mean))
+        # Random position
+        x = random.randint(0, self.width - 1)
+        y = random.randint(0, self.height - 1)
 
-        # Create new trader
+        # Instantiate trader
+        sugar, spice = np.random.randint(10, 20, 2)
+        #sugar, spice = 15,15
+        sugar_metabolism, spice_metabolism = np.random.randint(3, 5, 2)
+        vision = random.randint(2, 4)
+        max_age = random.randint(70, 100)
         id = max(self.traders.keys()) + 1
         trader = Trader(id, self, sugar, sugar_metabolism, spice, spice_metabolism, vision, max_age)
-
-        # Random position
-        x = np.random.randint(0, self.width)
-        y = np.random.randint(0, self.height)
 
         # Place trader on grid
         self.grid.place_agent(trader, (x, y))
@@ -185,6 +186,54 @@ class SugarScape(Model):
 
         # Add trader to dictionary
         self.traders[id] = trader
+        """
+        # Get distribution of metabolism, vision and max age
+        sugar_metabolism = {i: 0 for i in range(1, 4)}
+        spice_metabolism = {i: 0 for i in range(1, 4)}
+        vision = {i: 0 for i in range(1, 4)}
+        max_age = {i: 0 for i in range(70, 100)}
 
+        # Incrementing each level within distribution
+        for trader in self.traders.values():
+            sugar_metabolism[trader.sugar_metabolism] += 1
+            spice_metabolism[trader.spice_metabolism] += 1
+            vision[trader.vision] += 1
+            max_age[trader.max_age] += 1
+
+        # Normalize distribution
+        n = len(self.traders)
+        sugar_metabolism = {k: v/n for k, v in sugar_metabolism.items()}
+        spice_metabolism = {k: v/n for k, v in spice_metabolism.items()}
+        vision = {k: v/n for k, v in vision.items()}
+        max_age = {k: v/n for k, v in max_age.items()}
+
+        # Use distributions to create set of parameters
+        sugar_metabolism = random.choice(list(sugar_metabolism.keys()), p=list(sugar_metabolism.values()))
+        spice_metabolism = random.choice(list(spice_metabolism.keys()), p=list(spice_metabolism.values()))
+        vision = random.choice(list(vision.keys()), p=list(vision.values()))
+        max_age = random.choice(list(max_age.keys()), p=list(max_age.values()))
+
+        # Create new trader
+        id = max(self.traders.keys()) + 1
+        sugar, spice = np.random.randint(1, 10, 2)
+        trader = Trader(id, self, sugar, sugar_metabolism, spice, spice_metabolism, vision, max_age)
+
+        # Random position
+        x = random.randint(0, self.width)
+        y = random.randint(0, self.height)
+
+        # Place trader on grid
+        self.grid.place_agent(trader, (x, y))
+        self.schedule.add(trader)
+
+        # Add trader to dictionary
+        self.traders[id] = trader
+        """
         # Increment reproduction counter
-        self.reproduced += 1
+        self.reproduced_step += 1
+
+
+
+
+
+
