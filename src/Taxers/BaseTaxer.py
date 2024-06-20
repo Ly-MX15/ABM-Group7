@@ -15,9 +15,13 @@ class BaseTaxer:
 
     def collect_taxes(self, agents):
         for agent in agents:
+            # Compute excessive sugar and spice
+            excessive_sugar = max(0, agent.sugar - agent.sugar_metabolism)
+            excessive_spice = max(0, agent.spice - agent.spice_metabolism)
+
             # Compute tax
-            sugar_tax = agent.sugar * self.tax_rate
-            spice_tax = agent.spice * self.tax_rate
+            sugar_tax = int(self.tax_rate * excessive_sugar)
+            spice_tax = int(self.tax_rate * excessive_spice)
 
             # Update agent's goods and taxes collection
             agent.sugar -= sugar_tax
