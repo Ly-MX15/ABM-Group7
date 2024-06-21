@@ -37,3 +37,6 @@ class NeedsBasedDistributer(BaseDistributer):
             distributed_spice = min(spice_need, total_spice)
             agent.spice += distributed_spice
             total_spice -= distributed_spice
+
+        # Reset taxes collection
+        taxer.reset_tax()

@@ -116,7 +116,7 @@ server = ModularServer(
         "width": 50,
         "initial_population": 150,
         "metabolism_mean": 4,
-        "vision_mean": 20,
+        "vision_mean": 10,
         "max_age_mean": 70,
         "tax_scheme": "flat",
         "tax_steps": 10,
@@ -127,6 +127,6 @@ server = ModularServer(
     }
 )
 
-server.port = 8488
+server.port = 8486
 server.launch()
 

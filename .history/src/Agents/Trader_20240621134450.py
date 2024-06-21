@@ -246,7 +246,7 @@ class Trader(Agent):
         if (self.sugar >= self.model.repopulate_factor * self.sugar_metabolism
                 and self.spice >= self.model.repopulate_factor * self.spice_metabolism):
             self.model.repopulation()
-            repopulate_loss_ratio = 0.5
+            repopulate_loss_ratio = 0.8
                 # Reduce sugar and spice
             self.sugar *= 1 - repopulate_loss_ratio
             self.spice *= 1 - repopulate_loss_ratio

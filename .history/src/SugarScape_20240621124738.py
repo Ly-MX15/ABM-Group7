@@ -104,6 +104,11 @@ class SugarScape(Model):
             low_high = 4
             high_low = 4
             high_high = 8
+            # mean = 4
+            low_low = 2
+            low_high = 4
+            high_low = 4
+            high_high = 8
             # Define capacities and reproduction rates based on location
             if x < self.width // 2 and y < self.height // 2:  # Left Upper
                 capacities = [random.randint(high_low, high_high), random.randint(low_low, low_high)]
@@ -119,6 +124,7 @@ class SugarScape(Model):
                 capacities = [random.randint(low_low, low_high), random.randint(high_low, high_high)]
 
             cell = Cell(id, self, capacities)
+
             # Place cell on grid
             self.grid.place_agent(cell, (x, y))
             self.schedule.add(cell)

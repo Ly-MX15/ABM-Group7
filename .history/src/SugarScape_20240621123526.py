@@ -104,6 +104,11 @@ class SugarScape(Model):
             low_high = 4
             high_low = 4
             high_high = 8
+            # mean = 4
+            low_low = 2
+            low_high = 4
+            high_low = 4
+            high_high = 8
             # Define capacities and reproduction rates based on location
             if x < self.width // 2 and y < self.height // 2:  # Left Upper
                 capacities = [random.randint(high_low, high_high), random.randint(low_low, low_high)]
@@ -118,7 +123,10 @@ class SugarScape(Model):
                 capacities = [random.randint(low_low, low_high), random.randint(high_low, high_high)]
                 capacities = [random.randint(low_low, low_high), random.randint(high_low, high_high)]
 
+            #capacities = [random.randint(1, 7), random.randint(1, 7)]
+            #capacities = [random.randint(1, 7), random.randint(1, 7)]
             cell = Cell(id, self, capacities)
+
             # Place cell on grid
             self.grid.place_agent(cell, (x, y))
             self.schedule.add(cell)
@@ -130,8 +138,26 @@ class SugarScape(Model):
         self.traders = {}
         self.last_id = id
         for i in range(self.initial_population):
-            self.repopulation()
+            # Random position
+            x = random.randint(0, self.width)
+            y = random.randint(0, self.height)
 
+            # Instantiate trader
+            sugar, spice = random.randint(1, 10, 2)
+            sugar_metabolism, spice_metabolism = random.randint(1, 4, 2)
+            vision = random.randint(1, 4)
+            max_age = random.randint(70, 100)
+            trader = Trader(id, self, sugar, sugar_metabolism, spice, spice_metabolism, vision, max_age)
+
+            # Place trader on grid
+            self.grid.place_agent(trader, (x, y))
+            self.schedule.add(trader)
+
+            # Add trader to dictionary
+            self.traders[id] = trader
+
+            # Increment id
+            id += 1
 
         self.datacollector = DataCollector(
             model_reporters={
@@ -160,14 +186,13 @@ class SugarScape(Model):
         self.deaths_starved_step = 0
         self.reproduced_step = 0
         self.wealth_step = []
-        self.reproduced_step = 0
-        self.wealth_step = []
         self.schedule.step()
 
         self.deaths_age.append(self.deaths_age_step)
         self.deaths_starved.append(self.deaths_starved_step)
-        self.reproduced.append(self.reproduced_step)
-        self.averagewealth.append(np.mean(self.wealth_step))
+
+        # Get all trader
+        traders = [agent for agent in self.schedule.agents if isinstance(agent, Trader)]
 
         # Take step for taxer and distributer
         self.taxer.step(self.traders.values())
@@ -189,6 +214,37 @@ class SugarScape(Model):
         del self.traders[agent.unique_id]
 
     def repopulation(self):
+        # Get distribution of metabolism, vision and max age
+        sugar_metabolism = {i: 0 for i in range(1, 4)}
+        spice_metabolism = {i: 0 for i in range(1, 4)}
+        vision = {i: 0 for i in range(1, 4)}
+        max_age = {i: 0 for i in range(70, 100)}
+
+        # Incrementing each level within distribution
+        for trader in self.traders.values():
+            sugar_metabolism[trader.sugar_metabolism] += 1
+            spice_metabolism[trader.spice_metabolism] += 1
+            vision[trader.vision] += 1
+            max_age[trader.max_age] += 1
+
+        # Normalize distribution
+        n = len(self.traders)
+        sugar_metabolism = {k: v/n for k, v in sugar_metabolism.items()}
+        spice_metabolism = {k: v/n for k, v in spice_metabolism.items()}
+        vision = {k: v/n for k, v in vision.items()}
+        max_age = {k: v/n for k, v in max_age.items()}
+
+        # Use distributions to create set of parameters
+        sugar_metabolism = random.choice(list(sugar_metabolism.keys()), p=list(sugar_metabolism.values()))
+        spice_metabolism = random.choice(list(spice_metabolism.keys()), p=list(spice_metabolism.values()))
+        vision = random.choice(list(vision.keys()), p=list(vision.values()))
+        max_age = random.choice(list(max_age.keys()), p=list(max_age.values()))
+
+        # Create new trader
+        id = max(self.traders.keys()) + 1
+        sugar, spice = random.randint(1, 10, 2)
+        trader = Trader(id, self, sugar, sugar_metabolism, spice, spice_metabolism, vision, max_age)
+
         # Random position
         x = random.randint(0, self.width - 1)
         y = random.randint(0, self.height - 1)
@@ -210,7 +266,7 @@ class SugarScape(Model):
         self.schedule.add(trader)
 
         # Add trader to dictionary
-        self.traders[self.last_id] = trader
+        self.traders[id] = trader
 
         # Increment reproduction counter
         self.reproduced_step += 1

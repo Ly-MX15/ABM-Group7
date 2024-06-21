@@ -104,6 +104,11 @@ class SugarScape(Model):
             low_high = 4
             high_low = 4
             high_high = 8
+            # mean = 4
+            low_low = 2
+            low_high = 4
+            high_low = 4
+            high_high = 8
             # Define capacities and reproduction rates based on location
             if x < self.width // 2 and y < self.height // 2:  # Left Upper
                 capacities = [random.randint(high_low, high_high), random.randint(low_low, low_high)]
@@ -118,7 +123,10 @@ class SugarScape(Model):
                 capacities = [random.randint(low_low, low_high), random.randint(high_low, high_high)]
                 capacities = [random.randint(low_low, low_high), random.randint(high_low, high_high)]
 
+            #capacities = [random.randint(1, 7), random.randint(1, 7)]
+            #capacities = [random.randint(1, 7), random.randint(1, 7)]
             cell = Cell(id, self, capacities)
+
             # Place cell on grid
             self.grid.place_agent(cell, (x, y))
             self.schedule.add(cell)
@@ -137,10 +145,12 @@ class SugarScape(Model):
             model_reporters={
                 "Trade Price": compute_average_trade_price,
                 "Std Price":compute_std_trade_price,
+                "Std Price":compute_std_trade_price,
                 "Gini": compute_gini,
                 "Number of Trades": compute_trade_counts,
                 "Deaths by Age": compute_deaths_by_age,
                 "Deaths by Hunger": compute_deaths_by_hunger,
+                "Average Wealth": compute_average_wealth,
                 "Average Wealth": compute_average_wealth,
                 "Average Vision": compute_average_vision,
                 "Average Sugar Metabolism": compute_average_sugar_metabolism,

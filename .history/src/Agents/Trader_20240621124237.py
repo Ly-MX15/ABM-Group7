@@ -224,7 +224,6 @@ class Trader(Agent):
         return improved and not_crossed
 
     def repopulate(self):
-        """
         #if False:
         # Check if trader has enough sugar and spice
         mean_sugar_metabolism = 2.5 + random.random()
@@ -242,14 +241,6 @@ class Trader(Agent):
                 # Reduce sugar and spice
                 self.sugar *= 1 - repopulate_loss_ratio
                 self.spice *= 1 - repopulate_loss_ratio
-        """
-        if (self.sugar >= self.model.repopulate_factor * self.sugar_metabolism
-                and self.spice >= self.model.repopulate_factor * self.spice_metabolism):
-            self.model.repopulation()
-            repopulate_loss_ratio = 0.5
-                # Reduce sugar and spice
-            self.sugar *= 1 - repopulate_loss_ratio
-            self.spice *= 1 - repopulate_loss_ratio
 
     def age_increase(self):
         # Increment age
@@ -264,5 +255,5 @@ class Trader(Agent):
         return sugar ** self.sugar_weight * spice ** self.spice_weight
 
     def update_wealth(self):
-        self.wealth = self.sugar / self.sugar_metabolism + self.spice / self.spice_metabolism
+        self.wealth = self.sugar / self.sugar_metabolism, self.spice / self.spice_metabolism
         self.model.wealth_step.append(self.wealth)

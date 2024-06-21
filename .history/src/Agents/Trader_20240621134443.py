@@ -252,7 +252,7 @@ class Trader(Agent):
             self.spice *= 1 - repopulate_loss_ratio
 
     def age_increase(self):
-        # Increment age
+        # Increment age9
         self.age += 1
 
         # Check if age is greater than max age
