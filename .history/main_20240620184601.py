@@ -99,10 +99,10 @@ server = ModularServer(
      "initial_population": 300,
      'tax_scheme':"flat", 
      'distributer_scheme':"flat",
-     'tax_steps':15,
-     'tax_rate':0}
+     'tax_steps':5,
+     'tax_rate':0.3}
 )
 
-server.port = 8475
+server.port = 8471
 server.launch()
 

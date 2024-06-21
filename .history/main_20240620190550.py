@@ -103,6 +103,6 @@ server = ModularServer(
      'tax_rate':0}
 )
 
-server.port = 8475
+server.port = 8473
 server.launch()
 

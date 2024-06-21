@@ -96,7 +96,7 @@ class SugarScape(Model):
             #sugar, spice = 15,15
             sugar_metabolism, spice_metabolism = random.randint(3, 5, 2)
             vision = random.randint(2, 4)
-            max_age = random.randint(170, 200)
+            max_age = random.randint(70, 150)
             #max_age = 1000
             
             trader = Trader(id, self, sugar, sugar_metabolism, spice, spice_metabolism, vision, max_age)
