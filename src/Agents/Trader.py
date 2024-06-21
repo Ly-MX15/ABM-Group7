@@ -3,6 +3,7 @@ from numpy import random, sqrt
 from .Cell import Cell
 import numpy as np
 
+
 def get_distance(pos1, pos2):
     return (pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2
 
@@ -22,8 +23,8 @@ class Trader(Agent):
         self.age = 0
 
         # Weight for both sugar and spice when moving
-        self.spice_weight = sugar_metabolism / (sugar_metabolism + spice_metabolism)
-        self.sugar_weight = 1 - self.spice_weight
+        self.sugar_weight = sugar_metabolism / (sugar_metabolism + spice_metabolism)
+        self.spice_weight = 1 - self.sugar_weight
 
         # Set initial wealth
         self.wealth = 0
@@ -224,23 +225,22 @@ class Trader(Agent):
 
     def repopulate(self):
         #if False:
-            # Check if trader has enough sugar and spice
-            mean_sugar_metabolism = 2.5 + random.random()
-            mean_spice_metabolism = 2.5 + random.random()
-            if (self.sugar >= self.model.repopulate_factor * mean_sugar_metabolism
-                    and self.spice >= self.model.repopulate_factor * mean_spice_metabolism):
-                probability_of_repopulate =  np.log(max((self.sugar/mean_sugar_metabolism),
-                                                        (self.spice/mean_spice_metabolism))
-                                                    /self.model.repopulate_factor)
-                #print(probability_of_repopulate)
-                if random.random() < probability_of_repopulate:
-                    # Create new trader
-                    self.model.repopulation()
+        # Check if trader has enough sugar and spice
+        mean_sugar_metabolism = 2.5 + random.random()
+        mean_spice_metabolism = 2.5 + random.random()
+        if (self.sugar >= self.model.repopulate_factor * mean_sugar_metabolism
+                and self.spice >= self.model.repopulate_factor * mean_spice_metabolism):
+            probability_of_repopulate = np.log(max((self.sugar / mean_sugar_metabolism),
+                                                   (self.spice / mean_spice_metabolism))
+                                               / self.model.repopulate_factor)
+            if random.random() < probability_of_repopulate:
+                # Create new trader
+                self.model.repopulation()
 
-                    repopulate_loss_ratio = 0.3
-                    # Reduce sugar and spice
-                    self.sugar *= 1 - repopulate_loss_ratio
-                    self.spice *= 1 - repopulate_loss_ratio
+                repopulate_loss_ratio = 0.5
+                # Reduce sugar and spice
+                self.sugar *= 1 - repopulate_loss_ratio
+                self.spice *= 1 - repopulate_loss_ratio
 
     def age_increase(self):
         # Increment age
@@ -257,4 +257,3 @@ class Trader(Agent):
     def update_wealth(self):
         self.wealth = self.welfare(self.sugar, self.spice)
         self.model.wealth_step.append(self.wealth)
-

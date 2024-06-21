@@ -33,6 +33,11 @@ trader_count_chart = ChartModule(
     data_collector_name='datacollector'
 )
 
+trader_count_chart = ChartModule(
+    [{"Label": "Trader Count", "Color": "Yellow"}],
+    data_collector_name='datacollector'
+)
+
 trade_count_chart = ChartModule(
     [{"Label": "Number of Trades", "Color": "Blue"}],
     data_collector_name='datacollector'
@@ -69,6 +74,12 @@ average_wealth_chart = ChartModule(
 )
 
 
+average_wealth_chart = ChartModule(
+    [{"Label": "Average Wealth", "Color": "Purple"}],
+    data_collector_name='datacollector'
+)
+
+
 average_sugar_metabolism_chart = ChartModule(
     [{"Label": "Average Sugar Metabolism", "Color": "Pink"}],
     data_collector_name='datacollector'
@@ -89,20 +100,33 @@ Std_trade_price_chart = ChartModule(
     data_collector_name='datacollector'
 )
 
+Std_trade_price_chart = ChartModule(
+    [{"Label": "Std Price", "Color": "Red"}],
+    data_collector_name='datacollector'
+)
+
 server = ModularServer(
     SugarScape,
-    [canvas_element, Std_trade_price_chart, average_wealth_chart, trader_count_chart, trade_count_chart, average_trade_price_chart, gini_pop,
+    [canvas_element, Std_trade_price_chart, average_wealth_chart, trader_count_chart, Std_trade_price_chart, average_wealth_chart, trader_count_chart, trade_count_chart, average_trade_price_chart, gini_pop,
      deaths_by_age_chart, deaths_by_hunger_chart, average_vision_chart,
      average_sugar_metabolism_chart, average_spice_metabolism_chart, reproduced_chart],
     "Sugarscape Model",
-    {"height": 50, "width": 50, 
-     "initial_population": 300,
-     'tax_scheme':"flat", 
-     'distributer_scheme':"flat",
-     'tax_steps':15,
-     'tax_rate':0}
+    {
+        "height": 50,
+        "width": 50,
+        "initial_population": 300,
+        "metabolism_mean": 3,
+        "vision_mean": 3,
+        "max_age_mean": 70,
+        "tax_scheme": "luxury",
+        "tax_steps": 10,
+        "tax_rate": 0.1,
+        "distributer_scheme": "needs",
+        "distributer_steps": 20,
+        "repopulate_factor": 10
+    }
 )
 
-server.port = 8475
+server.port = 8470
 server.launch()
 
