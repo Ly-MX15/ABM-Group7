@@ -99,32 +99,25 @@ class SugarScape(Model):
         # Create grid cells
         id = 0
         for content, (x, y) in self.grid.coord_iter():
-            # mean = 4
-            low_low = 2
-            low_high = 4
-            high_low = 4
-            high_high = 8
-            # Define capacities and reproduction rates based on location
-            if x < self.width // 2 and y < self.height // 2:  # Left Upper
-                capacities = [random.randint(high_low, high_high), random.randint(low_low, low_high)]
-                capacities = [random.randint(high_low, high_high), random.randint(low_low, low_high)]
-            elif x < self.width // 2 and y >= self.height // 2:  # Left Lower
-                capacities = [random.randint(high_low, high_high), random.randint(low_low, low_high)]
-                capacities = [random.randint(high_low, high_high), random.randint(low_low, low_high)]
-            elif x >= self.width // 2 and y < self.height // 2:  # Right Upper
-                capacities = [random.randint(low_low, low_high), random.randint(high_low, high_high)]
-                capacities = [random.randint(low_low, low_high), random.randint(high_low, high_high)]
-            else:  # Right Lower
-                capacities = [random.randint(low_low, low_high), random.randint(high_low, high_high)]
-                capacities = [random.randint(low_low, low_high), random.randint(high_low, high_high)]
+            high_mean = 10
+            low_mean = 2
+            
+            # Define capacities and reproduction rates based on location using Poisson distribution
+            if (x < self.width // 2 and y < self.height // 2) or (x >= self.width // 2 and y < self.height // 2):  # Top Left and Top Right
+                capacities = [random.poisson(high_mean), random.poisson(low_mean)]
+            else:  # Bottom Left and Bottom Right
+                capacities = [random.poisson(low_mean), random.poisson(high_mean)]
 
+            #capacities = [random.randint(1, 7), random.randint(1, 7)]
             cell = Cell(id, self, capacities)
+
             # Place cell on grid
             self.grid.place_agent(cell, (x, y))
             self.schedule.add(cell)
 
             # Increment id
             id += 1
+
 
         # Create traders
         self.traders = {}

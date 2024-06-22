@@ -159,7 +159,6 @@ class Trader(Agent):
                 trade_price = sqrt(mrs * neighbors_mrs)
 
                 if trade_price == 0:
-                    print(1)
                     break
 
                 # Check if trade price is greater than 1
