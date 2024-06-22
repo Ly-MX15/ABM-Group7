@@ -20,7 +20,17 @@ def agent_portrayal(agent):
         portrayal["Shape"] = "circle"
     elif type(agent) is Cell:
         portrayal["Shape"] = "rect"
-        portrayal["Color"] = "green" if agent.sugar > 0 and agent.spice > 0 else "black"
+
+        # Set color based on sugar and spice
+        if agent.sugar > agent.spice:
+            portrayal["Color"] = "green"
+        elif agent.sugar < agent.spice:
+            portrayal["Color"] = "orange"
+        elif agent.sugar > 0 and agent.spice > 0:
+            portrayal["Color"] = "rgba(128,210,0, 255)"
+        else:
+            portrayal["Color"] = "black"
+
         portrayal["Layer"] = 0
 
     return portrayal
@@ -123,7 +133,8 @@ server = ModularServer(
         "tax_rate": 0,
         "distributer_scheme": "flat",
         "distributer_steps": 20,
-        "repopulate_factor": 10
+        "repopulate_factor": 10,
+        "map_scheme": "top_heavy",
     }
 )
 

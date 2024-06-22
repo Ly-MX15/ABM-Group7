@@ -6,7 +6,6 @@ from mesa.datacollection import DataCollector
 
 # Agents
 from src.Agents.Trader import Trader
-from src.Agents.Cell import Cell
 
 # Taxers
 from src.Taxers.BaseTaxer import BaseTaxer
@@ -20,8 +19,8 @@ from src.Distributers.ProgressiveDistributer import ProgressiveDistributer
 from src.Distributers.NeedsBasedDistributer import NeedsBasedDistributer
 from src.Distributers.RandomDistributer import RandomDistributer
 
-# Distributers
-
+# GridCreator
+from src.GridCreator import GridCreator
 
 # Statistics
 from .statistics import *
@@ -36,7 +35,8 @@ class SugarScape(Model):
                  metabolism_mean=3, vision_mean=3, max_age_mean=70,
                  tax_scheme="progressive", tax_steps=10, tax_rate=0,
                  distributer_scheme="progressive", distributer_steps=20,
-                 repopulate_factor=10, seed_value=42):
+                 repopulate_factor=10, map_scheme="uniform",
+                 seed_value=42):
 
         # Initialize model
         super().__init__()
@@ -97,39 +97,19 @@ class SugarScape(Model):
         self.wealth_step = []
 
         # Create grid cells
-        id = 0
-        for content, (x, y) in self.grid.coord_iter():
-            high_mean = 10
-            low_mean = 2
-            
-            # Define capacities and reproduction rates based on location using Poisson distribution
-            if (x < self.width // 2 and y < self.height // 2) or (x >= self.width // 2 and y < self.height // 2):  # Top Left and Top Right
-                capacities = [random.poisson(high_mean), random.poisson(low_mean)]
-            else:  # Bottom Left and Bottom Right
-                capacities = [random.poisson(low_mean), random.poisson(high_mean)]
-
-            #capacities = [random.randint(1, 7), random.randint(1, 7)]
-            cell = Cell(id, self, capacities)
-
-            # Place cell on grid
-            self.grid.place_agent(cell, (x, y))
-            self.schedule.add(cell)
-
-            # Increment id
-            id += 1
-
+        self.last_id = 0
+        grid_creator = GridCreator(self, map_scheme)
+        grid_creator.create_grid()
 
         # Create traders
         self.traders = {}
-        self.last_id = id
         for i in range(self.initial_population):
             self.repopulation()
-
 
         self.datacollector = DataCollector(
             model_reporters={
                 "Trade Price": compute_average_trade_price,
-                "Std Price":compute_std_trade_price,
+                "Std Price": compute_std_trade_price,
                 "Gini": compute_gini,
                 "Number of Trades": compute_trade_counts,
                 "Deaths by Age": compute_deaths_by_age,
@@ -207,9 +187,3 @@ class SugarScape(Model):
 
         # Increment reproduction counter
         self.reproduced_step += 1
-
-
-
-
-
-
