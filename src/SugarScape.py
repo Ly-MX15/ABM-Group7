@@ -107,16 +107,18 @@ class SugarScape(Model):
             # Define capacities and reproduction rates based on location
             if x < self.width // 2 and y < self.height // 2:  # Left Upper
                 capacities = [random.randint(high_low, high_high), random.randint(low_low, low_high)]
+                capacities = [random.randint(high_low, high_high), random.randint(low_low, low_high)]
             elif x < self.width // 2 and y >= self.height // 2:  # Left Lower
+                capacities = [random.randint(high_low, high_high), random.randint(low_low, low_high)]
                 capacities = [random.randint(high_low, high_high), random.randint(low_low, low_high)]
             elif x >= self.width // 2 and y < self.height // 2:  # Right Upper
                 capacities = [random.randint(low_low, low_high), random.randint(high_low, high_high)]
+                capacities = [random.randint(low_low, low_high), random.randint(high_low, high_high)]
             else:  # Right Lower
                 capacities = [random.randint(low_low, low_high), random.randint(high_low, high_high)]
+                capacities = [random.randint(low_low, low_high), random.randint(high_low, high_high)]
 
-            #capacities = [random.randint(1, 7), random.randint(1, 7)]
             cell = Cell(id, self, capacities)
-
             # Place cell on grid
             self.grid.place_agent(cell, (x, y))
             self.schedule.add(cell)
@@ -156,6 +158,8 @@ class SugarScape(Model):
         self.current_step += 1
         self.deaths_age_step = 0
         self.deaths_starved_step = 0
+        self.reproduced_step = 0
+        self.wealth_step = []
         self.reproduced_step = 0
         self.wealth_step = []
         self.schedule.step()
