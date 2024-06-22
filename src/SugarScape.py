@@ -32,10 +32,10 @@ from numpy import random
 
 
 class SugarScape(Model):
-    def __init__(self, height=50, width=50, initial_population=100,
+    def __init__(self, height=50, width=50, initial_population=300,
                  metabolism_mean=3, vision_mean=3, max_age_mean=70,
-                 tax_scheme="flat", tax_steps=10, tax_rate=0.2,
-                 distributer_scheme="flat", distributer_steps=20,
+                 tax_scheme="progressive", tax_steps=10, tax_rate=0,
+                 distributer_scheme="progressive", distributer_steps=20,
                  repopulate_factor=10, seed_value=42):
 
         # Initialize model

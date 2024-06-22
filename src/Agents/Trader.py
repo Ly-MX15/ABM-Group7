@@ -254,5 +254,5 @@ class Trader(Agent):
         return sugar ** self.sugar_weight * spice ** self.spice_weight
 
     def update_wealth(self):
-        self.wealth = self.welfare(self.sugar, self.spice)
+        self.wealth = self.sugar/self.sugar_metabolism + self.spice/self.spice_metabolism
         self.model.wealth_step.append(self.wealth)
