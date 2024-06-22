@@ -54,6 +54,7 @@ class SugarScape(Model):
         self.metabolism_mean = metabolism_mean
         self.vision_mean = vision_mean
         self.max_age_mean = max_age_mean
+        self.map_scheme = map_scheme
 
         # Creating taxer object
         if tax_scheme == "flat":
