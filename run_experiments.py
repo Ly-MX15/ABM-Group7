@@ -13,7 +13,7 @@ def setup_logger():
     logger.setLevel(logging.INFO)
     return logger
 
-def run_model(map_scheme, tax_scheme, distributer_scheme, tax_rate, replicate, seed_value):
+def run_model(map_scheme, tax_scheme, distributer_scheme, tax_rate, replicate, seed_value, step_size=1):
     """Run the SugarScape model with given parameters and log the process."""
     logger = setup_logger()
     logger.info(f"Running experiment: map_scheme={map_scheme}, tax_scheme={tax_scheme}, distributer_scheme={distributer_scheme}, tax_rate={tax_rate}, replicate={replicate}")
@@ -30,7 +30,7 @@ def run_model(map_scheme, tax_scheme, distributer_scheme, tax_rate, replicate, s
     
     for step in range(max_steps):
         model.step()
-        if step % 1 == 0:  # Output every step
+        if step % step_size == 0:  # Output every step
             logger.info(f"Model step {step}: map_scheme={map_scheme}, tax_scheme={tax_scheme}, distributer_scheme={distributer_scheme}, tax_rate={tax_rate}, replicate={replicate}")
             gini_coefficient = model.datacollector.get_model_vars_dataframe()['Gini'].values[-1]
             gini_over_time.append(float(gini_coefficient))
@@ -39,7 +39,7 @@ def run_model(map_scheme, tax_scheme, distributer_scheme, tax_rate, replicate, s
     gini_coefficient = model.datacollector.get_model_vars_dataframe()['Gini'].values[-1]
     logger.info(f"Finished: map_scheme={map_scheme}, tax_scheme={tax_scheme}, distributer_scheme={distributer_scheme}, tax_rate={tax_rate}, replicate={replicate}, gini_coefficient={gini_coefficient}")
     
-    return map_scheme, tax_scheme, distributer_scheme, tax_rate, list(range(0, max_steps, 10)), gini_over_time, agents_over_time
+    return map_scheme, tax_scheme, distributer_scheme, tax_rate, list(range(0, max_steps, step_size)), gini_over_time, agents_over_time
 
 # Define experiment parameters
 max_steps = 500
