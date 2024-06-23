@@ -26,18 +26,20 @@ def run_model(map_scheme, tax_scheme, distributer_scheme, tax_rate, replicate, s
                        seed_value=seed_value)
     
     gini_over_time = []
+    agents_over_time = []
     
     for step in range(max_steps):
         model.step()
-        if step % 10 == 0:  # Output every 10 steps
+        if step % 1 == 0:  # Output every step
             logger.info(f"Model step {step}: map_scheme={map_scheme}, tax_scheme={tax_scheme}, distributer_scheme={distributer_scheme}, tax_rate={tax_rate}, replicate={replicate}")
             gini_coefficient = model.datacollector.get_model_vars_dataframe()['Gini'].values[-1]
             gini_over_time.append(float(gini_coefficient))
+            agents_over_time.append(len(model.traders))
     
     gini_coefficient = model.datacollector.get_model_vars_dataframe()['Gini'].values[-1]
     logger.info(f"Finished: map_scheme={map_scheme}, tax_scheme={tax_scheme}, distributer_scheme={distributer_scheme}, tax_rate={tax_rate}, replicate={replicate}, gini_coefficient={gini_coefficient}")
     
-    return map_scheme, tax_scheme, distributer_scheme, tax_rate, list(range(0, max_steps, 10)), gini_over_time
+    return map_scheme, tax_scheme, distributer_scheme, tax_rate, list(range(0, max_steps, 10)), gini_over_time, agents_over_time
 
 # Define experiment parameters
 max_steps = 500
@@ -66,7 +68,7 @@ for map_scheme in map_schemes:
                 results_data.append(result)
     
     # Save results to a DataFrame and CSV file
-    columns = ['Map Scheme', 'Tax Scheme', 'Distributer Scheme', 'Tax Rate', 'Time Steps', 'Gini Over Time']
+    columns = ['Map Scheme', 'Tax Scheme', 'Distributer Scheme', 'Tax Rate', 'Time Steps', 'Gini Over Time', 'Agents Over Time']
     results_df = pd.DataFrame(results_data, columns=columns)
     results_df.to_csv(f'experiments_results_{map_scheme}.csv', index=False)
 
