@@ -35,7 +35,7 @@ class SugarScape(Model):
                  metabolism_mean=3, vision_mean=3, max_age_mean=70,
                  tax_scheme="progressive", tax_steps=10, tax_rate=0,
                  distributer_scheme="progressive", distributer_steps=20,
-                 repopulate_factor=10, map_scheme="uniform",
+                 repopulate_factor=10, map_scheme="uniform", tax_bool = False,
                  seed_value=42):
 
         # Initialize model
@@ -49,6 +49,7 @@ class SugarScape(Model):
         self.width = width
         self.initial_population = initial_population
         self.current_step = 0
+        self.tax_bool = tax_bool
 
         # Agent parameters
         self.metabolism_mean = metabolism_mean
@@ -144,8 +145,9 @@ class SugarScape(Model):
         self.averagewealth.append(np.mean(self.wealth_step))
 
         # Take step for taxer and distributer
-        self.taxer.step(self.traders.values())
-        self.distributer.step(self.traders.values(), self.taxer)
+        if self.tax_bool == True:
+            self.taxer.step(self.traders.values())
+            self.distributer.step(self.traders.values(), self.taxer)
 
         self.datacollector.collect(self)
         self.running = True if self.schedule.get_agent_count() > 0 else False
