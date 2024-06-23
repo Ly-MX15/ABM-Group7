@@ -56,8 +56,8 @@ map_schemes = ['uniform', 'top_heavy', 'split']
 combinations = [
     ("progressive", "needs"),
     ("flat", "flat"),
-    ("regressive", "random"),
-    ("luxury", "progressive"),
+    # ("regressive", "random"),
+    # ("luxury", "progressive"),
     ("progressive", "progressive")
 ]
 
