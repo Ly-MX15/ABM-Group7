@@ -7,12 +7,16 @@ class ProgressiveDistributer(BaseDistributer):
         wealths = [agent.wealth for agent in agents]
         wealths.sort()
 
-        # Find the threshold for classes
+# Find the threshold for classes
         low_n = len(wealths) // 3 + 1
         middle_n = 2 * low_n
+        if low_n >= len(wealths):
+            low_n = 0
+        if middle_n >= len(wealths):
+            middle_n = len(wealths) - 1
         low_class_threshold = wealths[low_n]
         middle_class_threshold = wealths[middle_n]
-
+        
         # Find how much each class gets distributed
         low_class = {}
         middle_class = {}
