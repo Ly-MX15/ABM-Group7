@@ -43,7 +43,7 @@ def run_model(map_scheme, tax_scheme, distributer_scheme, tax_rate, replicate, s
 
 # Define experiment parameters
 max_steps = 500
-replicates = 5
+replicates = 30
 tax_rates = [0.1, 0.25, 0.4]
 
 # Define the different map schemes
