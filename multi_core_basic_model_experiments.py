@@ -26,11 +26,11 @@ def run_model(args):
                        #distributer_scheme=distributer_scheme,
                        #tax_rate=tax_rate,
                        height=50, width=50, initial_population=300,
-                       metabolism_mean=4 if map_scheme == "top_heavy" else 5 if map_scheme == "uniform" else 3,
-                       vision_mean=5 if map_scheme == "top_heavy" else 2 if map_scheme == "uniform" else 4,
+                       metabolism_mean=5,
+                       vision_mean=2,
                        max_age_mean=70,
-                       tax_steps=20, distributer_steps=20, repopulate_factor=10, tax_bool=False,
-                       seed_value=seed_value)
+                       tax_steps=20, distributer_steps=20, repopulate_factor=10, tax_bool=True,
+                       seed_value= seed_value)
     
     gini_over_time = []
     agents_over_time = []
@@ -55,7 +55,7 @@ tax_rates = [0.1, 0.25, 0.4]
 step_size = 1
 
 # Define the different map schemes
-map_schemes = ['uniform','top_heavy', 'split']
+map_schemes = ['top_heavy', 'split']
 
 # Define the combinations of tax and redistribution schemes
 combinations = [
