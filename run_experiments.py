@@ -29,10 +29,10 @@ def run_model(map_scheme, tax_scheme, distributer_scheme, tax_rate, replicate, s
     
     for step in range(max_steps):
         model.step()
-        if step % 10 == 0:  # Output every 10 steps
-            logger.info(f"Model step {step}: map_scheme={map_scheme}, tax_scheme={tax_scheme}, distributer_scheme={distributer_scheme}, tax_rate={tax_rate}, replicate={replicate}")
-            gini_coefficient = model.datacollector.get_model_vars_dataframe()['Gini'].values[-1]
-            gini_over_time.append(float(gini_coefficient))
+        #if step % 10 == 0:  # Output every 10 steps
+        logger.info(f"Model step {step}: map_scheme={map_scheme}, tax_scheme={tax_scheme}, distributer_scheme={distributer_scheme}, tax_rate={tax_rate}, replicate={replicate}")
+        gini_coefficient = model.datacollector.get_model_vars_dataframe()['Gini'].values[-1]
+        gini_over_time.append(float(gini_coefficient))
     
     gini_coefficient = model.datacollector.get_model_vars_dataframe()['Gini'].values[-1]
     logger.info(f"Finished: map_scheme={map_scheme}, tax_scheme={tax_scheme}, distributer_scheme={distributer_scheme}, tax_rate={tax_rate}, replicate={replicate}, gini_coefficient={gini_coefficient}")
@@ -41,7 +41,7 @@ def run_model(map_scheme, tax_scheme, distributer_scheme, tax_rate, replicate, s
 
 # Define experiment parameters
 max_steps = 500
-replicates = 5
+replicates = 30
 tax_rates = [0.1, 0.25, 0.4]
 
 # Define the different map schemes
