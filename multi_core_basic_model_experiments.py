@@ -15,18 +15,15 @@ def setup_logger():
     return logger
 
 def run_model(args):
-    map_scheme, replicate, seed_value, max_steps, step_size = args
+    map_scheme, metabolism_mean, replicate, seed_value, max_steps, step_size = args
     """Run the SugarScape model with given parameters and log the process."""
     logger = setup_logger()
-    logger.info(f"Running experiment: map_scheme={map_scheme},  replicate={replicate}")
-    print(f"Running experiment: map_scheme={map_scheme}, replicate={replicate}")
+    logger.info(f"Running experiment: map_scheme={map_scheme}, metabolism_mean={metabolism_mean}, replicate={replicate}")
+    print(f"Running experiment: map_scheme={map_scheme}, metabolism_mean={metabolism_mean}, replicate={replicate}")
     
     model = SugarScape(map_scheme=map_scheme,
-                       #tax_scheme=tax_scheme,
-                       #distributer_scheme=distributer_scheme,
-                       #tax_rate=tax_rate,
                        height=50, width=50, initial_population=300,
-                       metabolism_mean=5,
+                       metabolism_mean=metabolism_mean,
                        vision_mean=2,
                        max_age_mean=70,
                        tax_steps=20, distributer_steps=20, repopulate_factor=10, tax_bool=True,
@@ -38,44 +35,35 @@ def run_model(args):
     for step in range(max_steps):
         model.step()
         if step % step_size == 0:  # Output every step
-            logger.info(f"Model step {step}: map_scheme={map_scheme}, replicate={replicate}")
+            logger.info(f"Model step {step}: map_scheme={map_scheme}, metabolism_mean={metabolism_mean}, replicate={replicate}")
             gini_coefficient = model.datacollector.get_model_vars_dataframe()['Gini'].values[-1]
             gini_over_time.append(float(gini_coefficient))
             agents_over_time.append(len(model.traders))
     
     gini_coefficient = model.datacollector.get_model_vars_dataframe()['Gini'].values[-1]
-    logger.info(f"Finished: map_scheme={map_scheme}, replicate={replicate}, gini_coefficient={gini_coefficient}")
+    logger.info(f"Finished: map_scheme={map_scheme}, metabolism_mean={metabolism_mean}, replicate={replicate}, gini_coefficient={gini_coefficient}")
     
-    return map_scheme, list(range(0, max_steps, step_size)), gini_over_time, agents_over_time
+    return map_scheme, metabolism_mean, list(range(0, max_steps, step_size)), gini_over_time, agents_over_time
 
 # Define experiment parameters
 max_steps = 500
 replicates = 10
-tax_rates = [0.1, 0.25, 0.4]
 step_size = 1
 
 # Define the different map schemes
-map_schemes = ['top_heavy', 'split']
+map_schemes = ['uniform','top_heavy', 'split']
 
-# Define the combinations of tax and redistribution schemes
-combinations = [
-    ("progressive", "needs"),
-    ("flat", "flat"),
-    ("regressive", "random"),
-    ("luxury", "progressive"),
-    ("progressive", "progressive")
-]
+# Define the metabolism mean range
+metabolism_means = range(1, 6)
 
 def run_experiments():
     # Generate the list of arguments for each experiment
     args_list = []
     for map_scheme in map_schemes:
-        #for tax_scheme, distributer_scheme in combinations:
-            #for tax_rate in tax_rates:
-                for replicate in range(replicates):
-                    #args = (map_scheme, tax_scheme, distributer_scheme, tax_rate, replicate, None, max_steps, step_size)
-                    args =(map_scheme, replicate, None, max_steps, step_size)
-                    args_list.append(args)
+        for metabolism_mean in metabolism_means:
+            for replicate in range(replicates):
+                args = (map_scheme, metabolism_mean, replicate, None, max_steps, step_size)
+                args_list.append(args)
     
     # Run the experiments in parallel
     with Pool(cpu_count() - 1) as pool:  # Use all available CPUs except one
@@ -83,10 +71,11 @@ def run_experiments():
 
     # Organize results and save to CSV
     for map_scheme in map_schemes:
-        results_data = [result for result in results if result[0] == map_scheme]
-        columns = ['Map Scheme', 'Time Steps', 'Gini Over Time', 'Agents Over Time']
-        results_df = pd.DataFrame(results_data, columns=columns)
-        results_df.to_csv(f'experiments_results_basic_{map_scheme}.csv', index=False)
+        for metabolism_mean in metabolism_means:
+            results_data = [result for result in results if result[0] == map_scheme and result[1] == metabolism_mean]
+            columns = ['Map Scheme', 'Metabolism Mean', 'Time Steps', 'Gini Over Time', 'Agents Over Time']
+            results_df = pd.DataFrame(results_data, columns=columns)
+            results_df.to_csv(f'experiments_results_{map_scheme}_metabolism_{metabolism_mean}.csv', index=False)
 
 if __name__ == "__main__":
     print("Starting experiments...")
