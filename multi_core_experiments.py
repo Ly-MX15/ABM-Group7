@@ -27,7 +27,7 @@ def run_model(args):
                        tax_rate=tax_rate,
                        height=50, width=50, initial_population=300,
                        metabolism_mean=5, vision_mean=2, max_age_mean=70,
-                       tax_steps=20, distributer_steps=20, repopulate_factor=10, tax_bool=False,
+                       tax_steps=20, distributer_steps=20, repopulate_factor=10, tax_bool=True,
                        seed_value=seed_value)
     
     gini_over_time = []
