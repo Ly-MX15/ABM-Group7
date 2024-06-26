@@ -1,0 +1,9 @@
+0
+"                       ST   ST_conf
+metabolism_mean  0.848003  0.099810
+vision           0.018312  0.009967"
+"                       S1   S1_conf
+metabolism_mean  0.722760  0.182674
+vision           0.043602  0.029744"
+"                                 S2   S2_conf
+(metabolism_mean, vision)  0.221828  0.403868"
