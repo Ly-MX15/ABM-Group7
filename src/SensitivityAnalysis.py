@@ -47,7 +47,7 @@ def __save_samples(ranges, distinct_samples, splits=8):
 
 def run_model(file, replicates=10, max_steps=300):
     # Load samples
-    samples = pd.read_csv(file)
+    samples = pd.read_csv(file)[:5]
 
     # Run batch
     results = []
@@ -60,14 +60,17 @@ def run_model(file, replicates=10, max_steps=300):
             for i in range(replicates):
                 params["Gini"] = batches[i]["Gini"]
                 params["Trader Count"] = batches[i]["Trader Count"]
-                results += [params]
+                results.append(list(params.values()))
             pbar.update(1)
+
 
     # Get directory of file
     directory = Path(file).parent
 
     # Get file number
     file_number = file.split("_")[-1].split(".")[0]
+
+    print(pd.DataFrame(results, columns=params.keys()))
 
     # Save results
     pd.DataFrame(results).to_csv(f"{directory}/results_{file_number}.csv", index=False)

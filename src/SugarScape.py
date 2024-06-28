@@ -40,16 +40,10 @@ class SugarScape(Model):
 
         # Initialize model
         super().__init__()
-        #
-        # # Print all parameters in one line
-        # print(f"height={height}, width={width}, initial_population={initial_population}, "
-        #       f"metabolism_mean={metabolism_mean}, vision_mean={vision_mean}, max_age_mean={max_age_mean}, "
-        #       f"tax_scheme={tax_scheme}, tax_steps={tax_steps}, tax_rate={tax_rate}, "
-        #       f"distributer_scheme={distributer_scheme}, distributer_steps={distributer_steps}, "
-        #       f"repopulate_factor={repopulate_factor}, map_scheme={map_scheme}, cell_regeneration={cell_regeneration}")
 
         # Set seed for reproducibility
-        random.seed(seed_value)
+        if seed_value:
+            random.seed(seed_value)
 
         # Set parameters
         self.height = height
