@@ -23,7 +23,7 @@ split = 1
 # menghan = 3
 # yuan = 4
 # ilia = 5
-file_num = 2
+file_num = 1
 
 # Run model
 file = f"SA/split_{split}/samples_{file_num}.csv"
