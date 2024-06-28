@@ -4,9 +4,10 @@ from .Agents.Cell import Cell
 
 
 class GridCreator:
-    def __init__(self, model, map_scheme):
+    def __init__(self, model, map_scheme, cell_regeneration):
         self.model = model
         self.map_scheme = map_scheme
+        self.cell_regeneration = cell_regeneration
 
     def create_grid(self):
         if self.map_scheme == "uniform":
@@ -63,7 +64,7 @@ class GridCreator:
 
     def place_cell(self, capacities, x, y):
         # Initialize cell
-        cell = Cell(self.model.last_id, self.model, capacities)
+        cell = Cell(self.model.last_id, self.model, capacities, self.cell_regeneration)
 
         # Place cell on grid
         self.model.grid.place_agent(cell, (x, y))
