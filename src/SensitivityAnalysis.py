@@ -70,10 +70,11 @@ def run_model(file, replicates=10, max_steps=200):
     # Get file number
     file_number = file.split("_")[-1].split(".")[0]
 
-    print(pd.DataFrame(results, columns=params.keys()))
+    # Create df
+    df = pd.DataFrame(results, columns=list(params.keys()))
 
     # Save results
-    pd.DataFrame(results).to_csv(f"{directory}/results_{file_number}.csv", index=False)
+    df.to_csv(f"{directory}/results_{file_number}.csv", index=False)
 
 
 def load_data(path="SA"):
