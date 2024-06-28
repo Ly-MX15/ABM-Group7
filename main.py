@@ -184,20 +184,12 @@ server = ModularServer(
      average_sugar_metabolism_chart, average_spice_metabolism_chart, reproduced_chart],
     "Sugarscape Model",
     {
-        "height": 50,
-        "width": 50,
-        "initial_population": 150,
-        "metabolism_mean": 5,
-        "vision_mean": 2,
-        "max_age_mean": 70,
-        "tax_scheme": "progressive",
-        "tax_steps": 20,
-        "tax_rate": 0,
-        "distributer_scheme": "progressive",
-        "distributer_steps": 20,
-        "repopulate_factor": 10,
-        "map_scheme": "split",
-        "cell_regeneration": 3,
+        "initial_population": 100,
+        "metabolism_mean": 5.724278133362532,
+        "vision_mean": 2.4390112552791834,
+        "max_age_mean": 93.55770520865917,
+        "repopulate_factor": 10.740787368267775,
+        "cell_regeneration": 4.586485207080841,
     }
 )
 

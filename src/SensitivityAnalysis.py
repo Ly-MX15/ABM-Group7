@@ -2,7 +2,6 @@ from src.SugarScape import SugarScape
 from mesa import batch_run
 import numpy as np
 from tqdm import tqdm
-import SALib
 from SALib.analyze import sobol
 from SALib.sample.sobol import sample
 import pandas as pd
@@ -46,7 +45,7 @@ def __save_samples(ranges, distinct_samples, splits=8):
             split_df[j].to_csv(f"{parent_directory}/SA/split_{i + 1}/samples_{j + 1}.csv", index=False)
 
 
-def run_model(file, replicates=10, max_steps=300):
+def run_model(file, replicates=10, max_steps=200):
     # Load samples
     samples = pd.read_csv(file)
 
@@ -61,8 +60,9 @@ def run_model(file, replicates=10, max_steps=300):
             for i in range(replicates):
                 params["Gini"] = batches[i]["Gini"]
                 params["Trader Count"] = batches[i]["Trader Count"]
-                results += [params]
+                results.append(list(params.values()))
             pbar.update(1)
+
 
     # Get directory of file
     directory = Path(file).parent
@@ -70,8 +70,11 @@ def run_model(file, replicates=10, max_steps=300):
     # Get file number
     file_number = file.split("_")[-1].split(".")[0]
 
+    # Create df
+    df = pd.DataFrame(results, columns=list(params.keys()))
+
     # Save results
-    pd.DataFrame(results).to_csv(f"{directory}/results_{file_number}.csv", index=False)
+    df.to_csv(f"{directory}/results_{file_number}.csv", index=False)
 
 
 def load_data(path="SA"):
@@ -163,7 +166,7 @@ def plot_indices(Si_gini, Si_trader_count, problem):
 if __name__ == "__main__":
     ranges = {
         "vision_mean": [1, 6],
-        "metabolism_mean": [1, 6],
+        "metabolism_mean": [3, 9],
         "max_age_mean": [70, 100],
         "repopulate_factor": [5, 15],
         "cell_regeneration": [1, 5],
