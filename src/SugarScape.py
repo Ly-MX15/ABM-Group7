@@ -36,10 +36,17 @@ class SugarScape(Model):
                  tax_scheme="progressive", tax_steps=20, tax_rate=0,
                  distributer_scheme="progressive", distributer_steps=20,
                  repopulate_factor=10, map_scheme="uniform", cell_regeneration=1,
-                 seed_value=42):
+                 seed_value=None):
 
         # Initialize model
         super().__init__()
+        #
+        # # Print all parameters in one line
+        # print(f"height={height}, width={width}, initial_population={initial_population}, "
+        #       f"metabolism_mean={metabolism_mean}, vision_mean={vision_mean}, max_age_mean={max_age_mean}, "
+        #       f"tax_scheme={tax_scheme}, tax_steps={tax_steps}, tax_rate={tax_rate}, "
+        #       f"distributer_scheme={distributer_scheme}, distributer_steps={distributer_steps}, "
+        #       f"repopulate_factor={repopulate_factor}, map_scheme={map_scheme}, cell_regeneration={cell_regeneration}")
 
         # Set seed for reproducibility
         random.seed(seed_value)
@@ -110,17 +117,17 @@ class SugarScape(Model):
 
         self.datacollector = DataCollector(
             model_reporters={
-                "Trade Price": compute_average_trade_price,
-                "Std Price": compute_std_trade_price,
+                # "Trade Price": compute_average_trade_price,
+                # "Std Price": compute_std_trade_price,
                 "Gini": compute_gini,
-                "Number of Trades": compute_trade_counts,
-                "Deaths by Age": compute_deaths_by_age,
-                "Deaths by Hunger": compute_deaths_by_hunger,
-                "Average Wealth": compute_average_wealth,
-                "Average Vision": compute_average_vision,
-                "Average Sugar Metabolism": compute_average_sugar_metabolism,
-                "Average Spice Metabolism": compute_average_spice_metabolism,
-                "Reproduced": compute_repopulation,
+                # "Number of Trades": compute_trade_counts,
+                # "Deaths by Age": compute_deaths_by_age,
+                # "Deaths by Hunger": compute_deaths_by_hunger,
+                # "Average Wealth": compute_average_wealth,
+                # "Average Vision": compute_average_vision,
+                # "Average Sugar Metabolism": compute_average_sugar_metabolism,
+                # "Average Spice Metabolism": compute_average_spice_metabolism,
+                # "Reproduced": compute_repopulation,
                 "Trader Count": lambda m: len(m.traders),
             },
             tables={"Trades": ["Step", "TraderHighMRS_ID", "TraderLowMRS_ID", "TradeSugar", "TradeSpice", "TradePrice"]}

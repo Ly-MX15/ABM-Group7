@@ -2,7 +2,6 @@ from src.SugarScape import SugarScape
 from mesa import batch_run
 import numpy as np
 from tqdm import tqdm
-import SALib
 from SALib.analyze import sobol
 from SALib.sample.sobol import sample
 import pandas as pd
@@ -169,4 +168,4 @@ if __name__ == "__main__":
         "cell_regeneration": [1, 5],
     }
 
-    __save_samples(ranges, 1024, splits=8)
+    # __save_samples(ranges, 1024, splits=8)
