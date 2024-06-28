@@ -45,9 +45,9 @@ def __save_samples(ranges, distinct_samples, splits=8):
             split_df[j].to_csv(f"{parent_directory}/SA/split_{i + 1}/samples_{j + 1}.csv", index=False)
 
 
-def run_model(file, replicates=10, max_steps=300):
+def run_model(file, replicates=10, max_steps=200):
     # Load samples
-    samples = pd.read_csv(file)[:5]
+    samples = pd.read_csv(file)
 
     # Run batch
     results = []
@@ -165,10 +165,10 @@ def plot_indices(Si_gini, Si_trader_count, problem):
 if __name__ == "__main__":
     ranges = {
         "vision_mean": [1, 6],
-        "metabolism_mean": [1, 6],
+        "metabolism_mean": [3, 9],
         "max_age_mean": [70, 100],
         "repopulate_factor": [5, 15],
         "cell_regeneration": [1, 5],
     }
 
-    # __save_samples(ranges, 1024, splits=8)
+    __save_samples(ranges, 1024, splits=8)
