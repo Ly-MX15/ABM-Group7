@@ -2,6 +2,7 @@ from src.SugarScape import SugarScape
 from mesa import batch_run
 import numpy as np
 from tqdm import tqdm
+import SALib
 from SALib.analyze import sobol
 from SALib.sample.sobol import sample
 import pandas as pd

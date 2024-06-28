@@ -23,11 +23,11 @@ split = 1
 # menghan = 3
 # yuan = 4
 # ilia = 5
-file_num = 1
+file_num = 2
 
 # Run model
 file = f"SA/split_{split}/samples_{file_num}.csv"
-run_model(file, replicates=10, max_steps=300)
+run_model(file, replicates=10, max_steps=200)
 
 ## Perform sensitivity analysis
 # # Get results
