@@ -197,6 +197,7 @@ server = ModularServer(
         "distributer_steps": 20,
         "repopulate_factor": 10,
         "map_scheme": "split",
+        "cell_regeneration": 3,
     }
 )
 

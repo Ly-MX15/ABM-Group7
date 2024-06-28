@@ -8,6 +8,7 @@ import pandas as pd
 from pathlib import Path
 import matplotlib.pyplot as plt
 
+
 def __save_samples(ranges, distinct_samples, splits=8):
     # Create problem
     problem = {
@@ -71,6 +72,7 @@ def run_model(file, replicates=10, max_steps=300):
     # Save results
     pd.DataFrame(results).to_csv(f"{directory}/results_{file_number}.csv", index=False)
 
+
 def load_data(path="SA"):
     # Get all directories
     directories = list(Path(path).iterdir())
@@ -89,6 +91,7 @@ def load_data(path="SA"):
 
     return results
 
+
 def analyse(problem, results):
     # Get Gini index and Trader count
     gini = results["Gini"]
@@ -99,6 +102,7 @@ def analyse(problem, results):
     Si_trader_count = sobol.analyze(problem, trader_count.values)
 
     return Si_gini, Si_trader_count
+
 
 def has_converged(Si_gini, Si_trader_count):
     # Get names
@@ -124,6 +128,7 @@ def has_converged(Si_gini, Si_trader_count):
 
     print("Sensitivity indices have converged")
 
+
 def plot_indices(Si_gini, Si_trader_count, problem):
     # Create subplots
     fig, axs = plt.subplots(2, 2, figsize=(10, 10))
@@ -137,14 +142,14 @@ def plot_indices(Si_gini, Si_trader_count, problem):
 
     for i in range(2):
         # Plotting for gini
-        axs[i, 0].plot(Si_gini[indices[i]], ticks , 'o')
+        axs[i, 0].plot(Si_gini[indices[i]], ticks, 'o')
         axs[i, 0].errorbar(Si_gini[indices[i]], ticks, xerr=Si_gini[f"{indices[i]}_conf"], fmt='o')
         axs[i, 0].set_title(f"Gini {indices[i]}")
         axs[i, 0].set_yticks(range(len(x_labels)))
         axs[i, 0].set_yticklabels(x_labels, rotation=45)
 
         # Plotting for trader count
-        axs[i, 1].plot(Si_trader_count[indices[i]], ticks , 'o')
+        axs[i, 1].plot(Si_trader_count[indices[i]], ticks, 'o')
         axs[i, 1].errorbar(Si_trader_count[indices[i]], ticks, xerr=Si_trader_count[f"{indices[i]}_conf"], fmt='o')
         axs[i, 1].set_title(f"Trader Count {indices[i]}")
         axs[i, 1].set_yticks(range(len(x_labels)))
@@ -153,14 +158,14 @@ def plot_indices(Si_gini, Si_trader_count, problem):
     plt.tight_layout()
     plt.show()
 
+
 if __name__ == "__main__":
     ranges = {
         "vision_mean": [1, 6],
-        "metabolism_mean": [1, 4],
-        "max_age_mean": [60, 100],
+        "metabolism_mean": [1, 6],
+        "max_age_mean": [70, 100],
         "repopulate_factor": [5, 15],
-        "cell_regeneration": [1, 3],
+        "cell_regeneration": [1, 5],
     }
 
     __save_samples(ranges, 1024, splits=8)
-

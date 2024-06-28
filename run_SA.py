@@ -2,10 +2,10 @@ from src.SensitivityAnalysis import *
 
 ranges = {
     "vision_mean": [1, 6],
-    "metabolism_mean": [1, 4],
-    "max_age_mean": [60, 100],
+    "metabolism_mean": [1, 6],
+    "max_age_mean": [70, 100],
     "repopulate_factor": [5, 15],
-    "cell_regeneration": [1, 3],
+    "cell_regeneration": [1, 5],
 }
 
 problem = {
@@ -14,12 +14,20 @@ problem = {
     "bounds": list(ranges.values())
 }
 
-## Perform simulations by setting split and file_num
+## Only change split if all files within this split have been run
 split = 1
+
+## Set the file_num based on your name
+# amish = 1
+# priyank = 2
+# menghan = 3
+# yuan = 4
+# ilia = 5
 file_num = 1
+
+# Run model
 file = f"SA/split_{split}/samples_{file_num}.csv"
 run_model(file, replicates=10, max_steps=300)
-
 
 ## Perform sensitivity analysis
 # # Get results
