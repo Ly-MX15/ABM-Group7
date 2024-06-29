@@ -60,6 +60,10 @@ def run_model(file, replicates=10, max_steps=200):
             for i in range(replicates):
                 params["Gini"] = batches[i]["Gini"]
                 params["Trader Count"] = batches[i]["Trader Count"]
+                
+                # # Print statements to check values for each replicate
+                # print(f"Replicate {i+1} - Gini: {batches[i]['Gini']}, Trader Count: {batches[i]['Trader Count']}")
+                
                 results.append(list(params.values()))
             pbar.update(1)
 
@@ -70,6 +74,11 @@ def run_model(file, replicates=10, max_steps=200):
     # Get file number
     file_number = file.split("_")[-1].split(".")[0]
 
+    # # Print the results list
+    # print("Results List:")
+    # for result in results:
+    #     print(result)
+        
     # Create df
     df = pd.DataFrame(results, columns=list(params.keys()))
 

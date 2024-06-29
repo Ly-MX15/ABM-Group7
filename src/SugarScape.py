@@ -57,6 +57,7 @@ class SugarScape(Model):
         self.vision_mean = vision_mean
         self.max_age_mean = max_age_mean
         self.map_scheme = map_scheme
+        self.cell_regeneration = cell_regeneration
 
         # Creating taxer object
         if tax_scheme == "flat":
@@ -101,7 +102,7 @@ class SugarScape(Model):
 
         # Create grid cells
         self.last_id = 0
-        grid_creator = GridCreator(self, map_scheme, cell_regeneration)
+        grid_creator = GridCreator(self, map_scheme, cell_regeneration=self.cell_regeneration)
         grid_creator.create_grid()
 
         # Create traders
