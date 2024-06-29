@@ -32,7 +32,7 @@ from numpy import random
 
 class SugarScape(Model):
     def __init__(self, height=50, width=50, initial_population=300,
-                 metabolism_mean=5, vision_mean=2, max_age_mean=70,
+                 metabolism_mean=5, vision_mean=3, max_age_mean=85,
                  tax_scheme="progressive", tax_steps=20, tax_rate=0,
                  distributer_scheme="progressive", distributer_steps=20,
                  repopulate_factor=10, map_scheme="uniform", cell_regeneration=1,
