@@ -1,11 +1,29 @@
 from .BaseTaxer import BaseTaxer
-
+import logging
 
 class ProgressiveTaxer(BaseTaxer):
     def collect_taxes(self, agents):
+
+        # Set up logger
+        logger = logging.getLogger("ProgressiveTaxer")
+        if not logger.hasHandlers():
+            handler = logging.FileHandler("taxer.log")
+            formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)
+            logger.setLevel(logging.INFO)
+        
         # Get wealth distribution to determine tax rates
         wealths = [agent.wealth for agent in agents]
 
+        # Log the number of agents
+        logger.info(f"Number of agents: {len(wealths)}")
+        
+        # If there are not enough agents, log the event and return early
+        if len(wealths) < 3:
+            logger.warning("Not enough agents to apply progressive taxes")
+            return
+        
         # Sort wealth
         wealths.sort()
 
