@@ -26,7 +26,7 @@ def run_model(args):
                        distributer_scheme=distributer_scheme,
                        tax_rate=tax_rate,
                        height=50, width=50, initial_population=300,
-                       metabolism_mean=metabolism_mean, vision_mean=3.5, max_age_mean=85,
+                       metabolism_mean=metabolism_mean, vision_mean=3, max_age_mean=85,
                        tax_steps=20, distributer_steps=20, repopulate_factor=repopulate_factor,
                        cell_regeneration=cell_regeneration,
                        seed_value=seed_value)
