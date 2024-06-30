@@ -4,44 +4,68 @@ from .BaseDistributer import BaseDistributer
 class ProgressiveDistributer(BaseDistributer):
     def distribute(self, agents, taxer):
         # Get wealth of all agents
-        wealths = [agent.wealth for agent in agents]
-        wealths.sort()
+        wealth = {
+            'sugar': [agent.sugar / agent.sugar_metabolism for agent in agents],
+            'spice': [agent.spice / agent.spice_metabolism for agent in agents]
+        }
 
-# Find the threshold for classes
-        low_n = len(wealths) // 3 + 1
-        middle_n = 2 * low_n
-        if low_n >= len(wealths):
-            low_n = 0
-        if middle_n >= len(wealths):
-            middle_n = len(wealths) - 1
-        low_class_threshold = wealths[low_n]
-        middle_class_threshold = wealths[middle_n]
-        
+        # Get class thresholds
+        low_threshold = {}
+        middle_threshold = {}
+        low_n = {}
+        middle_n = {}
+        for key in wealth:
+            # Sort wealth
+            wealth[key].sort()
+
+            # Find class thresholds
+            low_threshold[key], middle_threshold[key], low_n[key], middle_n[key] = class_thresholds(wealth[key])
+
+
         # Find how much each class gets distributed
         low_class = {}
         middle_class = {}
         high_class = {}
         for key in taxer.taxes_collection:
-            # Compute how much middle class gets
-            middle_class[key] = taxer.taxes_collection[key] / (7 / 3 * low_n + 2 / 3 * (len(wealths) - middle_n))
-
-            # Compute how much low and high class gets
+            # Compute how much each class in total gets
+            middle_class[key] = taxer.taxes_collection[key] / 3
             low_class[key] = middle_class[key] * 4 / 3
             high_class[key] = middle_class[key] * 2 / 3
 
-        # Distribute
+            # Compute individual class distribution
+            low_class[key] /= low_n[key]
+            middle_class[key] /= (middle_n[key] - low_n[key])
+            high_class[key] /= len(wealth[key]) - middle_n[key]
+
+        # Distribute taxes
         for agent in agents:
-            if agent.wealth < low_class_threshold:
+            # Sugar distribution
+            if agent.sugar / agent.sugar_metabolism < low_threshold["sugar"]:
                 agent.sugar += low_class["sugar"]
-                agent.spice += low_class["spice"]
-
-            elif agent.wealth < middle_class_threshold:
+            elif agent.sugar / agent.sugar_metabolism < middle_threshold["sugar"]:
                 agent.sugar += middle_class["sugar"]
-                agent.spice += middle_class["spice"]
-
             else:
                 agent.sugar += high_class["sugar"]
+
+            # Spice distribution
+            if agent.spice / agent.spice_metabolism < low_threshold["spice"]:
+                agent.spice += low_class["spice"]
+            elif agent.spice / agent.spice_metabolism < middle_threshold["spice"]:
+                agent.spice += middle_class["spice"]
+            else:
                 agent.spice += high_class["spice"]
 
         # Reset taxes collection
         taxer.reset_tax()
+
+def class_thresholds(resource):
+    # Find the threshold for classes
+    low_n = len(resource) // 3 + 1
+    middle_n = 2 * low_n
+    if low_n >= len(resource):
+        low_n = 0
+    if middle_n >= len(resource):
+        middle_n = len(resource) - 1
+
+    return resource[low_n], resource[middle_n], low_n, middle_n
+
