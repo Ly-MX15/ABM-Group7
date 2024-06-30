@@ -54,8 +54,8 @@ map_schemes = ['uniform', 'top_heavy', 'split']
 
 # Define the best, worst, and average scenarios
 scenarios = [
-    {"cell_regeneration": 5, "repopulate_factor": 15, "metabolism_mean": 3},  # Best case
-    {"cell_regeneration": 1, "repopulate_factor": 5, "metabolism_mean": 9},   # Worst case
+    {"cell_regeneration": 5, "repopulate_factor": 10, "metabolism_mean": 3},  # Best case
+    {"cell_regeneration": 1, "repopulate_factor": 10, "metabolism_mean": 9},   # Worst case
     {"cell_regeneration": 3, "repopulate_factor": 10, "metabolism_mean": 6}   # Average case
 ]
 
@@ -77,7 +77,7 @@ def run_experiments():
         results_data = [result for result in results if result[0] == map_scheme]
         columns = ['Map Scheme', 'Time Steps', 'Gini Over Time', 'Agents Over Time', 'Cell Regeneration', 'Repopulate Factor', 'Metabolism Mean']
         results_df = pd.DataFrame(results_data, columns=columns)
-        results_df.to_csv(f'experiments_results_base_{map_scheme}.csv', index=False)
+        results_df.to_csv(f'experiments_results_base_fix_repopulate_factor_{map_scheme}.csv', index=False)
 
 if __name__ == "__main__":
     print("Starting experiments...")
