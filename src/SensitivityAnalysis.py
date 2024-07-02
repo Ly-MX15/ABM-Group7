@@ -5,7 +5,7 @@ from tqdm import tqdm
 from SALib.analyze import sobol
 from SALib.sample.sobol import sample
 import pandas as pd
-from pathlib import Path
+import os
 import matplotlib.pyplot as plt
 
 
@@ -88,15 +88,15 @@ def run_model(file, replicates=10, max_steps=200):
 
 def load_data(path="SA"):
     # Get all directories
-    directories = list(Path(path).iterdir())
+    directories = [folder for folder in os.listdir(path) if os.path.isdir(f"{path}/{folder}")]
 
     # Load all results
     results = pd.DataFrame()
     for directory in directories:
-        files = list(directory.iterdir())
+        files = os.listdir(f"{path}/{directory}")
         for file in files:
-            if "results" in file.name:
-                result = pd.read_csv(file)
+            if "results" in file:
+                result = pd.read_csv(f"{path}/{directory}/{file}")
                 results = pd.concat([results, result])
 
     # Reset index
@@ -155,20 +155,23 @@ def plot_indices(Si_gini, Si_trader_count, problem):
 
     for i in range(2):
         # Plotting for gini
-        axs[i, 0].plot(Si_gini[indices[i]], ticks, 'o')
-        axs[i, 0].errorbar(Si_gini[indices[i]], ticks, xerr=Si_gini[f"{indices[i]}_conf"], fmt='o')
+        axs[i, 0].plot(Si_gini[indices[i]], ticks, 'o', color='blue')
+        axs[i, 0].errorbar(Si_gini[indices[i]], ticks, xerr=Si_gini[f"{indices[i]}_conf"],
+                           capsize=1, fmt='o', color='black')
         axs[i, 0].set_title(f"Gini {indices[i]}")
         axs[i, 0].set_yticks(range(len(x_labels)))
         axs[i, 0].set_yticklabels(x_labels, rotation=45)
 
         # Plotting for trader count
-        axs[i, 1].plot(Si_trader_count[indices[i]], ticks, 'o')
-        axs[i, 1].errorbar(Si_trader_count[indices[i]], ticks, xerr=Si_trader_count[f"{indices[i]}_conf"], fmt='o')
+        axs[i, 1].plot(Si_trader_count[indices[i]], ticks, 'o', color='blue')
+        axs[i, 1].errorbar(Si_trader_count[indices[i]], ticks, xerr=Si_trader_count[f"{indices[i]}_conf"],
+                           capsize=1, fmt='o', color='black')
         axs[i, 1].set_title(f"Trader Count {indices[i]}")
         axs[i, 1].set_yticks(range(len(x_labels)))
         axs[i, 1].set_yticklabels(x_labels, rotation=45)
 
     plt.tight_layout()
+    plt.savefig('SA/SensitivityAnalysis.png')
     plt.show()
 
 
