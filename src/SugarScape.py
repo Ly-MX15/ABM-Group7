@@ -36,7 +36,7 @@ class SugarScape(Model):
                  tax_scheme="progressive", tax_steps=20, tax_rate=0,
                  distributer_scheme="progressive", distributer_steps=20,
                  repopulate_factor=10, map_scheme="uniform", cell_regeneration=1,
-                 seed_value=None):
+                 track_scheme="analysis", seed_value=None):
 
         # Initialize model
         super().__init__()
@@ -110,23 +110,26 @@ class SugarScape(Model):
         for i in range(self.initial_population):
             self.repopulation()
 
-        self.datacollector = DataCollector(
-            model_reporters={
-                # "Trade Price": compute_average_trade_price,
-                # "Std Price": compute_std_trade_price,
-                "Gini": compute_gini,
-                # "Number of Trades": compute_trade_counts,
-                # "Deaths by Age": compute_deaths_by_age,
-                # "Deaths by Hunger": compute_deaths_by_hunger,
-                # "Average Wealth": compute_average_wealth,
-                # "Average Vision": compute_average_vision,
-                # "Average Sugar Metabolism": compute_average_sugar_metabolism,
-                # "Average Spice Metabolism": compute_average_spice_metabolism,
-                # "Reproduced": compute_repopulation,
-                "Trader Count": lambda m: len(m.traders),
-            },
-            tables={"Trades": ["Step", "TraderHighMRS_ID", "TraderLowMRS_ID", "TradeSugar", "TradeSpice", "TradePrice"]}
-        )
+        self.datacollector = None
+        self.tracker(track_scheme)
+        #
+        # DataCollector(
+        #     model_reporters={
+        #         # "Trade Price": compute_average_trade_price,
+        #         # "Std Price": compute_std_trade_price,
+        #         "Gini": compute_gini,
+        #         # "Number of Trades": compute_trade_counts,
+        #         # "Deaths by Age": compute_deaths_by_age,
+        #         # "Deaths by Hunger": compute_deaths_by_hunger,
+        #         # "Average Wealth": compute_average_wealth,
+        #         # "Average Vision": compute_average_vision,
+        #         # "Average Sugar Metabolism": compute_average_sugar_metabolism,
+        #         # "Average Spice Metabolism": compute_average_spice_metabolism,
+        #         # "Reproduced": compute_repopulation,
+        #         "Trader Count": lambda m: len(m.traders),
+        #     },
+        #     tables=}
+        # )
 
         self.running = True
         self.datacollector.collect(self)
@@ -199,4 +202,60 @@ class SugarScape(Model):
         self.reproduced_step += 1
 
 
-    def tracker(self, option='server'):
+    def tracker(self, track_scheme="analysis"):
+        if track_scheme == "server":
+            # Set statistics to report
+            model_reporters = {
+                "Trade Price": compute_average_trade_price,
+                "Std Price": compute_std_trade_price,
+                "Gini": compute_gini,
+                "Number of Trades": compute_trade_counts,
+                "Deaths by Age": compute_deaths_by_age,
+                "Deaths by Hunger": compute_deaths_by_hunger,
+                "Average Wealth": compute_average_wealth,
+                "Average Vision": compute_average_vision,
+                "Average Sugar Metabolism": compute_average_sugar_metabolism,
+                "Average Spice Metabolism": compute_average_spice_metabolism,
+                "Reproduced": compute_repopulation,
+                "Trader Count": lambda m: len(m.traders),
+            }
+
+        elif track_scheme == "analysis":
+            model_reporters = {
+                "Gini": compute_gini,
+                "Trader Count": lambda m: len(m.traders),
+            }
+
+        elif track_scheme == "segregation":
+            model_reporters = {
+                "Lower Spice Metabolism": compute_lower_spice_metabolism,
+                "Middle Spice Metabolism": compute_middle_spice_metabolism,
+                "Upper Spice Metabolism": compute_upper_spice_metabolism,
+                "Lower Sugar Metabolism": compute_lower_sugar_metabolism,
+                "Middle Sugar Metabolism": compute_middle_sugar_metabolism,
+                "Upper Sugar Metabolism": compute_upper_sugar_metabolism,
+                "Lower Vision": compute_lower_vision,
+                "Middle Vision": compute_middle_vision,
+                "Upper Vision": compute_upper_vision,
+            }
+        else:
+            raise ValueError("Invalid track scheme")
+
+        # Instantiate table
+        table = {"Trades":
+                     ["Step", "TraderHighMRS_ID", "TraderLowMRS_ID", "TradeSugar", "TradeSpice", "TradePrice"]
+                 }
+
+        # Set data collector
+        self.datacollector = DataCollector(
+            model_reporters=model_reporters,
+            tables=table)
+
+
+
+
+
+
+
+
+

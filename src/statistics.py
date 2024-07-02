@@ -87,3 +87,66 @@ def compute_average_spice_metabolism(model):
         return 0
     average_spice_metabolism = sum(trader.spice_metabolism for trader in traders) / len(traders)
     return average_spice_metabolism
+
+def compute_lower_spice_metabolism(model):
+    spice_metabolisms = [agent.spice_metabolism for agent in model.traders.values() if
+                         agent.pos[1] < 23]
+    if len(spice_metabolisms) == 0:
+        return 0
+    return np.mean(spice_metabolisms)
+
+def compute_lower_sugar_metabolism(model):
+    sugar_metabolisms = [agent.sugar_metabolism for agent in model.traders.values() if
+                         agent.pos[1] < 23]
+    if len(sugar_metabolisms) == 0:
+        return 0
+    return np.mean(sugar_metabolisms)
+
+def compute_middle_spice_metabolism(model):
+    spice_metabolisms = [agent.spice_metabolism for agent in model.traders.values() if
+                         23 <= agent.pos[1] <= 27]
+    if len(spice_metabolisms) == 0:
+        return 0
+    return np.mean(spice_metabolisms)
+
+def compute_middle_sugar_metabolism(model):
+    sugar_metabolisms = [agent.sugar_metabolism for agent in model.traders.values() if
+                         23 <= agent.pos[1] <= 27]
+    if len(sugar_metabolisms) == 0:
+        return 0
+    return np.mean(sugar_metabolisms)
+
+def compute_upper_spice_metabolism(model):
+    spice_metabolisms = [agent.spice_metabolism for agent in model.traders.values() if
+                         agent.pos[1] > 27]
+    if len(spice_metabolisms) == 0:
+        return 0
+    return np.mean(spice_metabolisms)
+
+def compute_upper_sugar_metabolism(model):
+    sugar_metabolisms = [agent.sugar_metabolism for agent in model.traders.values() if
+                         agent.pos[1] > 27]
+    if len(sugar_metabolisms) == 0:
+        return 0
+    return np.mean(sugar_metabolisms)
+
+def compute_lower_vision(model):
+    visions = [agent.vision for agent in model.traders.values() if
+               agent.pos[1] < 23]
+    if len(visions) == 0:
+        return 0
+    return np.mean(visions)
+
+def compute_middle_vision(model):
+    visions = [agent.vision for agent in model.traders.values() if
+               23 <= agent.pos[1] <= 27]
+    if len(visions) == 0:
+        return 0
+    return np.mean(visions)
+
+def compute_upper_vision(model):
+    visions = [agent.vision for agent in model.traders.values() if
+               agent.pos[1] > 27]
+    if len(visions) == 0:
+        return 0
+    return np.mean(visions)
