@@ -132,6 +132,7 @@ class SugarScape(Model):
         self.datacollector.collect(self)
 
     def step(self):
+        # Tracking for current step
         self.current_step += 1
         self.deaths_age_step = 0
         self.deaths_starved_step = 0
@@ -139,8 +140,11 @@ class SugarScape(Model):
         self.wealth_step = []
         self.reproduced_step = 0
         self.wealth_step = []
+
+        # Update cells and traders
         self.schedule.step()
 
+        # Add to lists
         self.deaths_age.append(self.deaths_age_step)
         self.deaths_starved.append(self.deaths_starved_step)
         self.reproduced.append(self.reproduced_step)
@@ -151,6 +155,7 @@ class SugarScape(Model):
             self.taxer.step(self.traders.values())
             self.distributer.step(self.traders.values(), self.taxer)
 
+        # Collect data
         self.datacollector.collect(self)
         self.running = True if self.schedule.get_agent_count() > 0 else False
 
@@ -192,3 +197,6 @@ class SugarScape(Model):
 
         # Increment reproduction counter
         self.reproduced_step += 1
+
+
+    def tracker(self, option='server'):
