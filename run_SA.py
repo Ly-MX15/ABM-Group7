@@ -25,19 +25,32 @@ split = 1
 # ilia = 5
 file_num = 1
 
-# Run model
-file = f"SA/split_{split}/samples_{file_num}.csv"
-run_model(file, replicates=10, max_steps=200)
+# # Run model
+# file = f"SA/split_{split}/samples_{file_num}.csv"
+# run_model(file, replicates=10, max_steps=200)
 
-## Perform sensitivity analysis
-# # Get results
-# results = load_data()
+# Perform sensitivity analysis
+# Get results
+results = load_data()
+
+# # Number of samples needed
+# n = (len(results)) // 12 * 12
 #
-# # Get sensitivity indices
-# Si_gini, Si_trader_count = analyse(problem, results)
+# # Compute how many to remove
+# n = len(results) - n
 #
-# # Check for convergence
-# has_converged(Si_gini, Si_trader_count)
+# # Randomly select indices
+# indices = np.random.choice(range(len(results)), n, replace=False)
 #
-# # Plot indices
-# plot_indices(Si_gini, Si_trader_count, problem)
+# # Drop the selected indices
+# results = results.drop(indices)
+
+# Get sensitivity indices
+Si_gini, Si_trader_count = analyse(problem, results)
+
+# Check for convergence
+has_converged(Si_gini, Si_trader_count)
+
+# Plot indices
+plot_indices(Si_gini, Si_trader_count, problem)
+

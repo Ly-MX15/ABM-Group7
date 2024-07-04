@@ -58,6 +58,8 @@ class SugarScape(Model):
         self.max_age_mean = max_age_mean
         self.map_scheme = map_scheme
         self.cell_regeneration = cell_regeneration
+        self.spice_metabolism_snapshot = np.zeros((self.height, self.width, 2))
+
 
         # Creating taxer object
         if tax_scheme == "flat":
@@ -161,6 +163,8 @@ class SugarScape(Model):
         # Collect data
         self.datacollector.collect(self)
         self.running = True if self.schedule.get_agent_count() > 0 else False
+        self._update_metabolism_snapshot()
+
 
     def run_model(self, step_count=200):
         for i in range(step_count):
@@ -200,6 +204,39 @@ class SugarScape(Model):
 
         # Increment reproduction counter
         self.reproduced_step += 1
+
+    
+    def _update_metabolism_snapshot(self):
+            """
+            Update the spice metabolism snapshot for each agent.
+    
+            This method iterates over all agents in the schedule. If the agent is a Trader,
+            it updates the spice metabolism snapshot by adding the agent's spice metabolism
+            to the corresponding position in the snapshot and increments the count of agents
+            at that position.
+            """
+        for agent in self.schedule.agents:
+            if isinstance(agent, Trader):
+                x, y = agent.pos
+                self.spice_metabolism_snapshot[x, y, 0] += agent.spice_metabolism
+                self.spice_metabolism_snapshot[x, y, 1] += 1
+
+    def get_average_spice_metabolism_map(self):
+        """
+        Calculate and return the average spice metabolism map.
+
+        This method computes the average spice metabolism at each position by dividing
+        the total spice metabolism by the number of agents at that position. Positions
+        with no agents are set to zero to avoid division by zero errors.
+
+        Returns:
+            numpy.ndarray: A 2D array representing the average spice metabolism at each
+                           position on the map.
+        """
+        with np.errstate(divide='ignore', invalid='ignore'):
+            average_map = self.spice_metabolism_snapshot[:, :, 0] / self.spice_metabolism_snapshot[:, :, 1]
+        average_map[np.isnan(average_map)] = 0  
+        return average_map
 
 
     def tracker(self, track_scheme="analysis"):
