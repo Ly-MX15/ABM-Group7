@@ -58,6 +58,8 @@ class SugarScape(Model):
         self.max_age_mean = max_age_mean
         self.map_scheme = map_scheme
         self.cell_regeneration = cell_regeneration
+        self.spice_metabolism_snapshot = np.zeros((self.height, self.width, 2))
+
 
         # Creating taxer object
         if tax_scheme == "flat":
@@ -161,6 +163,8 @@ class SugarScape(Model):
         # Collect data
         self.datacollector.collect(self)
         self.running = True if self.schedule.get_agent_count() > 0 else False
+        self._update_metabolism_snapshot()
+
 
     def run_model(self, step_count=200):
         for i in range(step_count):
@@ -200,6 +204,22 @@ class SugarScape(Model):
 
         # Increment reproduction counter
         self.reproduced_step += 1
+
+    
+    def _update_metabolism_snapshot(self):
+
+        for agent in self.schedule.agents:
+            if isinstance(agent, Trader):
+                x, y = agent.pos
+                self.spice_metabolism_snapshot[x, y, 0] += agent.spice_metabolism
+                self.spice_metabolism_snapshot[x, y, 1] += 1
+
+
+    def get_average_spice_metabolism_map(self):
+        with np.errstate(divide='ignore', invalid='ignore'):
+            average_map = self.spice_metabolism_snapshot[:, :, 0] / self.spice_metabolism_snapshot[:, :, 1]
+        average_map[np.isnan(average_map)] = 0  # Replace NaN with 0 where count is 0
+        return average_map
 
 
     def tracker(self, track_scheme="analysis"):
