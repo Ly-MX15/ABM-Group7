@@ -215,11 +215,11 @@ class SugarScape(Model):
             to the corresponding position in the snapshot and increments the count of agents
             at that position.
             """
-        for agent in self.schedule.agents:
-            if isinstance(agent, Trader):
-                x, y = agent.pos
-                self.spice_metabolism_snapshot[x, y, 0] += agent.spice_metabolism
-                self.spice_metabolism_snapshot[x, y, 1] += 1
+            for agent in self.schedule.agents:
+                if isinstance(agent, Trader):
+                    x, y = agent.pos
+                    self.spice_metabolism_snapshot[x, y, 0] += agent.spice_metabolism
+                    self.spice_metabolism_snapshot[x, y, 1] += 1
 
     def get_average_spice_metabolism_map(self):
         """
