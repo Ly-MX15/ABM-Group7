@@ -9,7 +9,20 @@ import os
 import matplotlib.pyplot as plt
 
 
-def __save_samples(ranges, distinct_samples, splits=8):
+def __save_samples(ranges: dict, distinct_samples: int, splits: int = 8) -> None:
+    """
+    Create samples using Sobol sequence and save them in different splits for parallel processing. Results are saved to
+    csv files. This function should only be run once, when splitting among different team members.
+
+    Args:
+        ranges (dict): Dictionary of parameter ranges
+        distinct_samples (int): Number of distinct samples to generate
+        splits (int):  Number of splits to divide the samples into
+
+    Returns:
+        None
+    """
+
     # Create problem
     problem = {
         'num_vars': len(ranges),
@@ -27,25 +40,37 @@ def __save_samples(ranges, distinct_samples, splits=8):
     split_dfs = np.array_split(df, splits)
 
     # Get current directory
-    current_directory = Path(__file__).parent
+    current_directory = os.path.dirname(os.path.realpath(__file__))
 
     # Go to parent directory
     parent_directory = current_directory.parent
 
     # Split dataframe
     for i in range(splits):
-        # Create folder
-        Path(f"{parent_directory}/SA/split_{i + 1}").mkdir(parents=True, exist_ok=True)
+        # Check if folder does not exist
+        if not os.path.exists(f"{parent_directory}/SensitivityAnalysis/split_{i + 1}"):
+            os.mkdir(f"{parent_directory}/SensitivityAnalysis/split_{i + 1}")
 
         # Splitting into 5 files
         split_df = np.array_split(split_dfs[i], 5)
 
         # Save samples
         for j in range(5):
-            split_df[j].to_csv(f"{parent_directory}/SA/split_{i + 1}/samples_{j + 1}.csv", index=False)
+            split_df[j].to_csv(f"{parent_directory}/SensitivityAnalysis/split_{i + 1}/samples_{j + 1}.csv", index=False)
 
 
-def run_model(file, replicates=10, max_steps=200):
+def run_model(file: str, replicates: int = 10, max_steps: int = 200) -> None:
+    """
+    Run the model for each sample in the file and save the results to a csv file.
+
+    Args:
+        file (str): File containing the samples
+        replicates (int): Number of replicates to run
+        max_steps (int): Maximum number of steps to run the model
+
+    Returns:
+        None
+    """
     # Load samples
     samples = pd.read_csv(file)
 
@@ -60,25 +85,16 @@ def run_model(file, replicates=10, max_steps=200):
             for i in range(replicates):
                 params["Gini"] = batches[i]["Gini"]
                 params["Trader Count"] = batches[i]["Trader Count"]
-                
-                # # Print statements to check values for each replicate
-                # print(f"Replicate {i+1} - Gini: {batches[i]['Gini']}, Trader Count: {batches[i]['Trader Count']}")
-                
+
                 results.append(list(params.values()))
             pbar.update(1)
 
-
     # Get directory of file
-    directory = Path(file).parent
+    directory = "/".join(file.split("/")[:-1])
 
     # Get file number
     file_number = file.split("_")[-1].split(".")[0]
 
-    # # Print the results list
-    # print("Results List:")
-    # for result in results:
-    #     print(result)
-        
     # Create df
     df = pd.DataFrame(results, columns=list(params.keys()))
 
@@ -86,9 +102,19 @@ def run_model(file, replicates=10, max_steps=200):
     df.to_csv(f"{directory}/results_{file_number}.csv", index=False)
 
 
-def load_data(path="SA"):
+def load_data(splits: int, path: str = "SensitivityAnalysis") -> pd.DataFrame:
+    """
+    Load all results from the different splits.
+
+    Args:
+        splits (int): Number of splits that have been simulated
+        path (str): Path to the directory containing the splits
+
+    Returns:
+        pd.DataFrame: Dataframe containing all the results
+    """
     # Get all directories
-    directories = [folder for folder in os.listdir(path) if os.path.isdir(f"{path}/{folder}")]
+    directories = ["split_" + str(i) for i in range(1, splits + 1)]
 
     # Load all results
     results = pd.DataFrame()
@@ -105,7 +131,18 @@ def load_data(path="SA"):
     return results
 
 
-def analyse(problem, results):
+def analyse(problem: dict, results: pd.DataFrame) -> tuple:
+    """
+    Perform sensitivity analysis using the Sobol method.
+
+    Args:
+        problem (dict): Problem definition as given in the SA-Lib documentation
+        results (pd.DataFrame): Dataframe containing the results of the model runs
+
+    Returns:
+        tuple: Sensitivity indices for Gini and Trader Count
+
+    """
     # Get Gini index and Trader count
     gini = results["Gini"]
     trader_count = results["Trader Count"]
@@ -117,32 +154,19 @@ def analyse(problem, results):
     return Si_gini, Si_trader_count
 
 
-def has_converged(Si_gini, Si_trader_count):
-    # Get names
-    indices = ["S1", "ST"]
+def plot_indices(Si_gini: pd.DataFrame, Si_trader_count: pd.DataFrame, problem: dict) -> tuple:
+    """
+    Plot the sensitivity indices for Gini and Trader Count.
 
-    for index in indices:
-        # Get values
-        gini = Si_gini[index]
-        trader_count = Si_trader_count[index]
+    Args:
+        Si_gini (pd.DataFrame): Sensitivity indices for Gini
+        Si_trader_count (pd.DataFrame): Sensitivity indices for Trader Count
+        problem (dict): Problem definition as given in the SA-Lib documentation
 
-        # Get confidence intervals
-        gini_CI = Si_gini[f"{index}_conf"]
-        trader_count_CI = Si_trader_count[f"{index}_conf"]
+    Returns:
+        tuple: Figure and Axes of the plots
 
-        # Checking left bounds
-        if np.any(gini - gini_CI < 0) or np.any(trader_count - trader_count_CI < 0):
-            print(f"Sensitivity indices have not converged")
-            return
-
-        # Checking right bounds
-        # if np.any(gini + gini_CI > 1) or np.any(trader_count + trader_count_CI > 1):
-        #     return False
-
-    print("Sensitivity indices have converged")
-
-
-def plot_indices(Si_gini, Si_trader_count, problem):
+    """
     # Create subplots
     fig, axs = plt.subplots(2, 2, figsize=(10, 10))
 
@@ -170,9 +194,12 @@ def plot_indices(Si_gini, Si_trader_count, problem):
         axs[i, 1].set_yticks(range(len(x_labels)))
         axs[i, 1].set_yticklabels(x_labels, rotation=45)
 
-    plt.tight_layout()
-    plt.savefig('SA/SensitivityAnalysis.png')
-    plt.show()
+        # Remove y-ticks for the right plot
+        axs[i, 1].set_yticklabels([])
+
+    fig.tight_layout()
+
+    return fig, axs
 
 
 if __name__ == "__main__":
