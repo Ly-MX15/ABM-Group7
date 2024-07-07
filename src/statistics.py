@@ -1,4 +1,6 @@
 import numpy as np
+
+
 def compute_std_trade_price(model):
     trade_data = model.get_trade_log()
     if len(trade_data) == 0:
@@ -9,6 +11,7 @@ def compute_std_trade_price(model):
     log_trade_prices = np.log(current_step_trades["TradePrice"])
     std_log_price = np.std(log_trade_prices)
     return std_log_price
+
 
 def compute_average_trade_price(model):
     trade_data = model.get_trade_log()
@@ -21,13 +24,11 @@ def compute_average_trade_price(model):
     average_price = np.mean(log_trade_prices)
     return average_price
 
+
 def compute_trade_counts(model):
     trade_data = model.get_trade_log()
     current_step_trades = trade_data[trade_data["Step"] == model.current_step]
     return len(current_step_trades)
-
-
-
 
 
 def compute_gini(model):
@@ -50,17 +51,22 @@ def compute_gini(model):
 def compute_deaths_by_age(model):
     """Return the number of deaths by age for the current step."""
     return model.deaths_age[-1] if model.deaths_age else 0
+
+
 def compute_average_wealth(model):
     """Return the number of deaths by age for the current step."""
     return model.averagewealth[-1] if model.averagewealth else 0
+
 
 def compute_deaths_by_hunger(model):
     """Return the number of deaths by hunger for the current step."""
     return model.deaths_starved[-1] if model.deaths_starved else 0
 
+
 def compute_repopulation(model):
     """Return the number of deaths by hunger for the current step."""
     return model.reproduced[-1] if model.reproduced else 0
+
 
 def compute_average_vision(model):
     """Compute the average vision of all living Trader agents."""
@@ -88,12 +94,14 @@ def compute_average_spice_metabolism(model):
     average_spice_metabolism = sum(trader.spice_metabolism for trader in traders) / len(traders)
     return average_spice_metabolism
 
+
 def compute_lower_spice_metabolism(model):
     spice_metabolisms = [agent.spice_metabolism for agent in model.traders.values() if
                          agent.pos[1] < 23]
     if len(spice_metabolisms) == 0:
         return 0
     return np.mean(spice_metabolisms)
+
 
 def compute_lower_sugar_metabolism(model):
     sugar_metabolisms = [agent.sugar_metabolism for agent in model.traders.values() if
@@ -102,12 +110,14 @@ def compute_lower_sugar_metabolism(model):
         return 0
     return np.mean(sugar_metabolisms)
 
+
 def compute_middle_spice_metabolism(model):
     spice_metabolisms = [agent.spice_metabolism for agent in model.traders.values() if
                          23 <= agent.pos[1] <= 27]
     if len(spice_metabolisms) == 0:
         return 0
     return np.mean(spice_metabolisms)
+
 
 def compute_middle_sugar_metabolism(model):
     sugar_metabolisms = [agent.sugar_metabolism for agent in model.traders.values() if
@@ -116,12 +126,14 @@ def compute_middle_sugar_metabolism(model):
         return 0
     return np.mean(sugar_metabolisms)
 
+
 def compute_upper_spice_metabolism(model):
     spice_metabolisms = [agent.spice_metabolism for agent in model.traders.values() if
                          agent.pos[1] > 27]
     if len(spice_metabolisms) == 0:
         return 0
     return np.mean(spice_metabolisms)
+
 
 def compute_upper_sugar_metabolism(model):
     sugar_metabolisms = [agent.sugar_metabolism for agent in model.traders.values() if
@@ -130,6 +142,7 @@ def compute_upper_sugar_metabolism(model):
         return 0
     return np.mean(sugar_metabolisms)
 
+
 def compute_lower_vision(model):
     visions = [agent.vision for agent in model.traders.values() if
                agent.pos[1] < 23]
@@ -137,12 +150,14 @@ def compute_lower_vision(model):
         return 0
     return np.mean(visions)
 
+
 def compute_middle_vision(model):
     visions = [agent.vision for agent in model.traders.values() if
                23 <= agent.pos[1] <= 27]
     if len(visions) == 0:
         return 0
     return np.mean(visions)
+
 
 def compute_upper_vision(model):
     visions = [agent.vision for agent in model.traders.values() if
