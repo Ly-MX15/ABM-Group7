@@ -1,4 +1,4 @@
-from typing import Dict, Any, Hashable
+from typing import Any, Hashable
 import pandas as pd
 from mesa import batch_run
 from src.SugarScape import SugarScape
@@ -289,7 +289,7 @@ def time_series(results: pd.DataFrame) -> tuple:
     return fig, axs
 
 
-def base_period_mean(results: pd.DataFrame, period: int = 20) -> dict:
+def base_period_mean(results: pd.DataFrame, period: int = 20) -> dict[str, dict[str, float]]:
     """
     Compute the mean of the last period for the base results.
 
@@ -327,15 +327,17 @@ def base_period_mean(results: pd.DataFrame, period: int = 20) -> dict:
     return base_results
 
 
-def period_mean(results: pd.DataFrame, period: int = 20) -> dict:
+def period_mean(results: pd.DataFrame, period: int = 20) -> dict[str, dict[str, np.ndarray]]:
     """
+    Compute the mean of the last period for each tax system and rate.
 
     Args:
-        results ():
-        period ():
+        results (pd.DataFrame): The results of one given scenario as DataFrame
+        period (int): Period of time before last period to compute the mean
 
     Returns:
-
+        dict: The mean and confidence interval of the results for each tax system and rate. The dictionary is structured
+        as follows: { "Variable": { "Tax System-Tax Rate": List[float] } }
     """
     # Variables
     variables = ["Gini", "Trader Count"]
@@ -403,15 +405,16 @@ def __plot_boxplot(ax: Axes, boxes: dict, mean: float, ci: float) -> Axes:
     return ax
 
 
-def boxplot(results: dict, base_results: dict, map_scheme: str) -> tuple:
+def boxplot(results: dict, base_results: dict, map_scheme: str) -> dict[str, tuple[Any, Any]]:
     """
     Create box plots for each variable and tax rate
     Args:
-        results ():
-        base_results ():
+        results (dict): The results of the experiments for each scenario
+        base_results (dict): The results of the base scenario
+        map_scheme (str): The map scheme used
 
     Returns:
-
+        tuple: The figure and axes of the plot for both variables
     """
     # Variables
     variables = ["Gini", "Trader Count"]
