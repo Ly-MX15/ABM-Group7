@@ -25,18 +25,92 @@ from src.GridCreator import GridCreator
 # Statistics
 from .statistics import *
 
-# Numpy
+# Numpy and Pandas
 import numpy as np
 from numpy import random
+import pandas as pd
 
 
 class SugarScape(Model):
-    def __init__(self, height=50, width=50, initial_population=300,
-                 metabolism_mean=5, vision_mean=3, max_age_mean=85,
-                 tax_scheme="progressive", tax_steps=20, tax_rate=0,
-                 distributer_scheme="progressive", distributer_steps=20,
-                 repopulate_factor=10, map_scheme="uniform", cell_regeneration=1,
-                 track_scheme="analysis", seed_value=None):
+    """
+    SugarScape class to model a trading environment with a grid, traders, and tax systems.
+
+    Attributes:
+        height (int): The height of the grid.
+        width (int): The width of the grid.
+        initial_population (int): The number of traders to start with.
+        current_step (int): The current step of the model.
+        tax_rate (float): The tax rate to apply to all trades.
+        metabolism_mean (float): The mean metabolism for traders.
+        vision_mean (float): The mean vision for traders.
+        max_age_mean (float): The mean maximum age for traders.
+        map_scheme (str): The scheme to use for generating the map.
+        cell_regeneration (float): The amount of sugar to regenerate in each cell.
+        spice_metabolism_snapshot (numpy.ndarray): A 3D array to store the spice metabolism of agents at each position on the grid.
+        taxer (BaseTaxer): The taxer object to apply taxes to trades.
+        distributer (BaseDistributer): The distributer object to distribute taxes to traders.
+        repopulate_factor (int): The factor used to determine when to repopulate traders.
+        schedule (RandomActivationByType): The schedule to activate agents.
+        grid (MultiGrid): The grid to place agents on.
+        deaths_age (list): A list to store the number of deaths by age at each step.
+        deaths_starved (list): A list to store the number of deaths by hunger at each step.
+        deaths_age_step (int): The number of deaths by age at the current step.
+        deaths_starved_step (int): The number of deaths by hunger at the current step.
+        reproduced (list): A list to store the number of traders reproduced at each step.
+        reproduced_step (int): The number of traders reproduced at the current step.
+        averagewealth (list): A list to store the average wealth of traders at each step.
+        wealth_step (list): A list to store the wealth of traders at the current step.
+        traders (dict): A dictionary to store the traders in the model.
+        last_id (int): The last id assigned to a trader.
+        datacollector (DataCollector): The data collector to collect data.
+        running (bool): A flag to indicate if the model is running.
+
+    Methods:
+        step()
+            Perform one step of the model.
+        run_model(step_count=200)
+            Run the model for a specified number of steps.
+        get_trade_log()
+            Get the trade log from the data collector.
+        remove_agent(agent)
+            Remove an agent from the model.
+        repopulation()
+            Repopulate the model with traders.
+        _update_metabolism_snapshot()
+            Update the spice metabolism snapshot for each agent.
+        get_average_spice_metabolism_map()
+            Get the average spice metabolism map.
+        tracker(track_scheme="analysis")
+            Set up the data collector and statistics to track statistics.
+    """
+
+    def __init__(self, height: int = 50, width: int = 50, initial_population: int = 300,
+                 metabolism_mean: float = 5, vision_mean: float = 3, max_age_mean: float = 85,
+                 tax_scheme: str = "progressive", tax_steps: int = 20, tax_rate: float = 0,
+                 distributer_scheme: str = "progressive", distributer_steps: int = 20,
+                 repopulate_factor: float = 10, map_scheme: str = "uniform", cell_regeneration: float = 1,
+                 track_scheme: str = "analysis", seed_value: int = None):
+        """
+        Initialize the SugarScape model.
+
+        Args:
+            height (int): The height of the grid.
+            width (int): The width of the grid.
+            initial_population (int): The number of traders to start with.
+            metabolism_mean (float): The mean metabolism for traders.
+            vision_mean (float): The mean vision for traders.
+            max_age_mean (float): The mean maximum age for traders.
+            tax_scheme (str): The tax scheme to use. Options are "flat", "progressive", "regressive", and "luxury".
+            tax_steps (int): The number of tax steps to use.
+            tax_rate (float): The tax rate to apply to all trades.
+            distributer_scheme (str): The distributer scheme to use. Options are "flat", "progressive", "needs", and "random".
+            distributer_steps (int): The number of distributer steps to use.
+            repopulate_factor (float): The factor used to determine when to repopulate traders.
+            map_scheme (str): The scheme to use for generating the map. Options are "uniform" and "random".
+            cell_regeneration (float): The amount of sugar to regenerate in each cell.
+            track_scheme (str): The scheme to use for tracking statistics. Options are "server", "analysis", and "segregation".
+            seed_value (int): The seed value to use for random number generation.
+        """
 
         # Initialize model
         super().__init__()
@@ -59,7 +133,6 @@ class SugarScape(Model):
         self.map_scheme = map_scheme
         self.cell_regeneration = cell_regeneration
         self.spice_metabolism_snapshot = np.zeros((self.height, self.width, 2))
-
 
         # Creating taxer object
         if tax_scheme == "flat":
@@ -114,29 +187,18 @@ class SugarScape(Model):
 
         self.datacollector = None
         self.tracker(track_scheme)
-        #
-        # DataCollector(
-        #     model_reporters={
-        #         # "Trade Price": compute_average_trade_price,
-        #         # "Std Price": compute_std_trade_price,
-        #         "Gini": compute_gini,
-        #         # "Number of Trades": compute_trade_counts,
-        #         # "Deaths by Age": compute_deaths_by_age,
-        #         # "Deaths by Hunger": compute_deaths_by_hunger,
-        #         # "Average Wealth": compute_average_wealth,
-        #         # "Average Vision": compute_average_vision,
-        #         # "Average Sugar Metabolism": compute_average_sugar_metabolism,
-        #         # "Average Spice Metabolism": compute_average_spice_metabolism,
-        #         # "Reproduced": compute_repopulation,
-        #         "Trader Count": lambda m: len(m.traders),
-        #     },
-        #     tables=}
-        # )
 
         self.running = True
         self.datacollector.collect(self)
 
-    def step(self):
+    def step(self) -> None:
+        """
+        Perform one step of the model.
+
+        Returns:
+            None
+
+        """
         # Tracking for current step
         self.current_step += 1
         self.deaths_age_step = 0
@@ -165,20 +227,51 @@ class SugarScape(Model):
         self.running = True if self.schedule.get_agent_count() > 0 else False
         self._update_metabolism_snapshot()
 
+    def run_model(self, step_count: int = 200) -> None:
+        """
+        Run the model for a specified number of steps.
 
-    def run_model(self, step_count=200):
+        Args:
+            step_count (int): The number of steps to run the model for.
+
+        Returns:
+            None
+
+        """
         for i in range(step_count):
             self.step()
 
-    def get_trade_log(self):
+    def get_trade_log(self) -> pd.DataFrame:
+        """
+        Get the trade log from the data collector.
+
+        Returns:
+            pd.DataFrame: A pandas DataFrame containing the trade log.
+        """
         return self.datacollector.get_table_dataframe("Trades")
 
-    def remove_agent(self, agent):
+    def remove_agent(self, agent: Trader) -> None:
+        """
+        Remove an agent from the model.
+
+        Args:
+            agent (Trader): The agent to remove.
+
+        Returns:
+            None
+
+        """
         self.grid.remove_agent(agent)
         self.schedule.remove(agent)
         del self.traders[agent.unique_id]
 
-    def repopulation(self):
+    def repopulation(self) -> None:
+        """
+        Repopulate the model with traders.
+
+        Returns:
+            None
+        """
         # Random position
         x = random.randint(0, self.width - 1)
         y = random.randint(0, self.height - 1)
@@ -205,23 +298,23 @@ class SugarScape(Model):
         # Increment reproduction counter
         self.reproduced_step += 1
 
-    
-    def _update_metabolism_snapshot(self):
-            """
-            Update the spice metabolism snapshot for each agent.
-    
-            This method iterates over all agents in the schedule. If the agent is a Trader,
-            it updates the spice metabolism snapshot by adding the agent's spice metabolism
-            to the corresponding position in the snapshot and increments the count of agents
-            at that position.
-            """
-            for agent in self.schedule.agents:
-                if isinstance(agent, Trader):
-                    x, y = agent.pos
-                    self.spice_metabolism_snapshot[x, y, 0] += agent.spice_metabolism
-                    self.spice_metabolism_snapshot[x, y, 1] += 1
+    def _update_metabolism_snapshot(self) -> None:
+        """
+        Update the spice metabolism snapshot for each agent. This method iterates over all agents in the schedule. If
+        the agent is a Trader, it updates the spice metabolism snapshot by adding the agent's spice metabolism to the
+        corresponding position in the snapshot and increments the count of agents at that position.
 
-    def get_average_spice_metabolism_map(self):
+        Returns:
+            None
+
+        """
+        for agent in self.schedule.agents:
+            if isinstance(agent, Trader):
+                x, y = agent.pos
+                self.spice_metabolism_snapshot[x, y, 0] += agent.spice_metabolism
+                self.spice_metabolism_snapshot[x, y, 1] += 1
+
+    def get_average_spice_metabolism_map(self) -> np.ndarray:
         """
         Calculate and return the average spice metabolism map.
 
@@ -235,11 +328,20 @@ class SugarScape(Model):
         """
         with np.errstate(divide='ignore', invalid='ignore'):
             average_map = self.spice_metabolism_snapshot[:, :, 0] / self.spice_metabolism_snapshot[:, :, 1]
-        average_map[np.isnan(average_map)] = 0  
+        average_map[np.isnan(average_map)] = 0
         return average_map
 
+    def tracker(self, track_scheme: str = "analysis") -> None:
+        """
+        Set up the data collector and statistics to track.
 
-    def tracker(self, track_scheme="analysis"):
+        Args: track_scheme (str): The scheme to use for tracking statistics. Options are "server", "analysis",
+        and "segregation".
+
+        Returns:
+            None
+
+        """
         if track_scheme == "server":
             # Set statistics to report
             model_reporters = {
@@ -287,12 +389,3 @@ class SugarScape(Model):
         self.datacollector = DataCollector(
             model_reporters=model_reporters,
             tables=table)
-
-
-
-
-
-
-
-
-

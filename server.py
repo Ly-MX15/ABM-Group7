@@ -3,12 +3,24 @@ from src.Agents.Cell import Cell
 from src.Agents.Trader import Trader
 from mesa.visualization import CanvasGrid, ModularServer, TextElement
 from mesa.visualization.modules import ChartModule
+from mesa.agent import Agent
 
 import math
 
-def agent_portrayal(agent):
+
+def agent_portrayal(agent) -> dict:
+    """
+    This function is used to define how agents are displayed in the visualization.
+
+    Args:
+        agent (Agent): The agent to be displayed.
+
+    Returns:
+        dict: A dictionary containing the agent's portrayal.
+
+    """
     if agent is None:
-        return
+        return {}
 
     portrayal = {"Filled": "true",
                  "r": 0.5,
@@ -44,19 +56,6 @@ def agent_portrayal(agent):
             portrayal["Color"] = "black"  # No resources
 
         portrayal["Layer"] = 0
-
-
-        # # Set color based on sugar and spice
-        # if agent.sugar > agent.spice:
-        #     portrayal["Color"] = "green"
-        # elif agent.sugar < agent.spice:
-        #     portrayal["Color"] = "orange"
-        # elif agent.sugar > 0 and agent.spice > 0:
-        #     portrayal["Color"] = "rgba(128,210,0, 255)"
-        # else:
-        #     portrayal["Color"] = "black"
-
-        # portrayal["Layer"] = 0
 
     return portrayal
 
@@ -100,88 +99,22 @@ canvas_element = CanvasGrid(agent_portrayal, 50, 50, 500, 500)
 
 legend_element = LegendElement()
 
-trader_count_chart = ChartModule(
-    [{"Label": "Trader Count", "Color": "Yellow"}],
-    data_collector_name='datacollector'
-)
+# Charts
+labels = ["Trader Count", "Number of Trades", "Trade Price", "Gini", "Deaths by Age", "Deaths by Hunger",
+          "Average Vision", "Average Wealth", "Average Sugar Metabolism", "Average Spice Metabolism",
+          "Reproduced", "Std Price"]
+colors = ["Yellow", "Blue", "Red", "Black", "Green", "Orange", "Purple", "Purple", "Pink", "Brown", "Black", "Red"]
+chart_modules = []
+for label, color in zip(labels, colors):
+    chart_modules.append(ChartModule([{"Label": label, "Color": color}], data_collector_name='datacollector'))
 
-trader_count_chart = ChartModule(
-    [{"Label": "Trader Count", "Color": "Yellow"}],
-    data_collector_name='datacollector'
-)
-
-trade_count_chart = ChartModule(
-    [{"Label": "Number of Trades", "Color": "Blue"}],
-    data_collector_name='datacollector'
-)
-
-average_trade_price_chart = ChartModule(
-    [{"Label": "Trade Price", "Color": "Red"}],
-    data_collector_name='datacollector'
-)
-
-gini_pop = ChartModule(
-    [{"Label": "Gini", "Color": "Black"}],
-    data_collector_name='datacollector'
-)
-
-deaths_by_age_chart = ChartModule(
-    [{"Label": "Deaths by Age", "Color": "Green"}],
-    data_collector_name='datacollector'
-)
-
-deaths_by_hunger_chart = ChartModule(
-    [{"Label": "Deaths by Hunger", "Color": "Orange"}],
-    data_collector_name='datacollector'
-)
-
-average_vision_chart = ChartModule(
-    [{"Label": "Average Vision", "Color": "Purple"}],
-    data_collector_name='datacollector'
-)
-
-average_wealth_chart = ChartModule(
-    [{"Label": "Average Wealth", "Color": "Purple"}],
-    data_collector_name='datacollector'
-)
-
-
-average_wealth_chart = ChartModule(
-    [{"Label": "Average Wealth", "Color": "Purple"}],
-    data_collector_name='datacollector'
-)
-
-
-average_sugar_metabolism_chart = ChartModule(
-    [{"Label": "Average Sugar Metabolism", "Color": "Pink"}],
-    data_collector_name='datacollector'
-)
-
-average_spice_metabolism_chart = ChartModule(
-    [{"Label": "Average Spice Metabolism", "Color": "Brown"}],
-    data_collector_name='datacollector'
-)
-
-reproduced_chart = ChartModule(
-    [{"Label": "Reproduced", "Color": "Black"}],
-    data_collector_name='datacollector'
-)
-
-Std_trade_price_chart = ChartModule(
-    [{"Label": "Std Price", "Color": "Red"}],
-    data_collector_name='datacollector'
-)
-
-Std_trade_price_chart = ChartModule(
-    [{"Label": "Std Price", "Color": "Red"}],
-    data_collector_name='datacollector'
-)
+# Add canvas element and legend element to the chart modules
+chart_modules.insert(0, canvas_element)
+chart_modules.insert(1, legend_element)
 
 server = ModularServer(
     SugarScape,
-    [canvas_element, trader_count_chart, legend_element, Std_trade_price_chart, average_wealth_chart, trader_count_chart, trade_count_chart, average_trade_price_chart, gini_pop,
-     deaths_by_age_chart, deaths_by_hunger_chart, average_vision_chart,
-     average_sugar_metabolism_chart, average_spice_metabolism_chart, reproduced_chart],
+    chart_modules,
     "Sugarscape Model",
     {
         "initial_population": 100,
@@ -195,4 +128,3 @@ server = ModularServer(
 
 server.port = 8488
 server.launch()
-

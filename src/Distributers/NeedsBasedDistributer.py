@@ -1,8 +1,23 @@
 from .BaseDistributer import BaseDistributer
+from src.Taxers.BaseTaxer import BaseTaxer
 
 
 class NeedsBasedDistributer(BaseDistributer):
-    def distribute(self, agents, taxer):
+    """
+    Distributes resources based on the needs of the agents. This distributer loops through all agents sorted by their
+    needs from highest to lowest the trader receives resources till their metabolism is satisfied.
+    """
+    def distribute(self, agents: dict, taxer: BaseTaxer):
+        """
+        Distributes resources based on the needs of the agents.
+
+        Args:
+            agents (dict): Dictionary of agents
+            taxer (BaseTaxer): Taxer object
+
+        Returns:
+            None
+        """
         # Calculate needs based on the difference between current resources and metabolism
         sugar_needs = []
         spice_needs = []

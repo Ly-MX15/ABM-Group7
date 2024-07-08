@@ -1,16 +1,72 @@
 from mesa import Agent
 from numpy import random, sqrt
 from .Cell import Cell
+from mesa.model import Model
 import numpy as np
 
 
-def get_distance(pos1, pos2):
+def get_distance(pos1: list[int], pos2: list[int]) -> int:
+    """
+    Compute the squared distance between two positions
+
+    Args:
+        pos1 (list[int]): Position 1 as a list of two integers [x,y]
+        pos2 (list[int]): Position 2 as a list of two integers [x,y]
+
+    Returns:
+        int: Squared distance between the two positions
+
+    """
     return (pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2
 
 
 class Trader(Agent):
-    def __init__(self, unique_id, model, sugar, sugar_metabolism,
-                 spice, spice_metabolism, vision, max_age):
+    """
+    A trader agent that moves around the grid, picks up sugar and spice, trades with other traders, and metabolizes sugar and spice.
+
+    Attributes:
+        sugar (int): Sugar resource of the trader
+        sugar_metabolism (int): Sugar metabolism rate of the trader
+        spice (int): Spice resource of the trader
+        spice_metabolism (int): Spice metabolism rate of the trader
+        vision (int): Vision range of the trader
+        max_age (int): Maximum age of the trader
+        age (int): Current age of the trader
+        sugar_weight (float): Weight of sugar when moving
+        spice_weight (float): Weight of spice when moving
+        wealth (float): Wealth of the trader
+        price (float): Price of the trader
+        has_died (bool): If the trader has died
+
+    Methods:
+        step(): Execute one step of the agent
+        move(): Move the agent to a cell with the highest welfare
+        pick_up(): Pick up sugar and spice from the cell
+        metabolize(): Metabolize sugar and spice
+        trade(): Trade sugar and spice with other traders
+        mrs(): Compute the Marginal Rate of Substitution (MRS)
+        improve_welfare(high, low, trade_sugar, trade_spice): Check if welfare is improved after trade
+        repopulate(): Repopulate the grid with new traders
+        age_increase(): Increment the age of the trader
+        welfare(sugar, spice): Compute the welfare of the trader
+        update_wealth(): Update the wealth
+
+    """
+    def __init__(self, unique_id: int, model: Model, sugar: int, sugar_metabolism: int,
+                 spice: int, spice_metabolism: int, vision: int, max_age: int):
+        """
+        Initialize a trader agent
+
+        Args:
+            unique_id (int): Unique identifier of the agent
+            model (SugarScape): Model where the agent belongs
+            sugar (int): Sugar resource of the trader at the start
+            sugar_metabolism (int): Metabolism rate of sugar
+            spice (int): Spice resource of the trader at the start
+            spice_metabolism (int): Metabolism rate of spice
+            vision (int): Vision range of the trader, also affects the movement
+            max_age (int): Maximum age of the trader
+        """
         super().__init__(unique_id, model)
 
         # Set initial parameters
@@ -36,7 +92,13 @@ class Trader(Agent):
         # If agent has died
         self.has_died = False
 
-    def step(self):
+    def step(self) -> None:
+        """
+        Execute one step of the agent
+
+        Returns:
+            None
+        """
         # Move agent
         self.move()
 
@@ -62,7 +124,13 @@ class Trader(Agent):
         if self.has_died:
             self.model.remove_agent(self)
 
-    def move(self):
+    def move(self) -> None:
+        """
+        Move the agent to a cell with the highest welfare
+
+        Returns:
+            None
+        """
         # Get neighborhood
         neighbours = [i for i in self.model.grid.get_neighborhood(
             self.pos, moore=False, include_center=False, radius=self.vision
@@ -103,7 +171,13 @@ class Trader(Agent):
             # Move to the position with the highest welfare
             self.model.grid.move_agent(self, best_position)
 
-    def pick_up(self):
+    def pick_up(self) -> None:
+        """
+        Pick up sugar and spice from the cell
+
+        Returns:
+            None
+        """
         this_cell = self.model.grid.get_cell_list_contents([self.pos])
         # Grab all sugar and spice from cell
         for agent in this_cell:
@@ -114,7 +188,13 @@ class Trader(Agent):
                 self.spice += agent.spice
                 agent.spice = 0
 
-    def metabolize(self):
+    def metabolize(self) -> None:
+        """
+        Metabolize sugar and spice
+
+        Returns:
+            None
+        """
         # Metabolize sugar
         self.sugar -= self.sugar_metabolism
 
@@ -126,7 +206,13 @@ class Trader(Agent):
             self.model.deaths_starved_step += 1
             self.has_died = True
 
-    def trade(self):
+    def trade(self) -> None:
+        """
+        Trade sugar and spice with other traders
+
+        Returns:
+            None
+        """
         # Get neighborhood
         neighbors = self.model.grid.get_neighbors(self.pos, moore=False, include_center=False, radius=1)
         random.shuffle(neighbors)
@@ -199,10 +285,28 @@ class Trader(Agent):
                 else:
                     break
 
-    def mrs(self):
+    def mrs(self) -> float:
+        """
+        Compute the Marginal Rate of Substitution (MRS)
+
+        Returns:
+            float: Marginal Rate of Substitution (MRS)
+        """
         return (self.sugar_metabolism * self.spice) / (self.spice_metabolism * self.sugar + 1e-9)
 
-    def improve_welfare(self, high, low, trade_sugar, trade_spice):
+    def improve_welfare(self, high: "Trader", low: "Trader", trade_sugar: float, trade_spice: float) -> bool:
+        """
+        Check if welfare is improved after trade and if MRS is not crossed
+
+        Args:
+            high (Trader): Trader with higher MRS
+            low (Trader): Trader with lower MRS
+            trade_sugar (float): Amount of sugar to trade
+            trade_spice (float): Amount of spice to trade
+
+        Returns:
+            bool: If welfare is improved after trade and MRS is not crossed
+        """
         # Compute welfare
         high_sugar = high.sugar + trade_sugar
         high_spice = high.spice - trade_spice
@@ -222,25 +326,12 @@ class Trader(Agent):
         # Check if welfare is improved
         return improved and not_crossed
 
-    def repopulate(self):
+    def repopulate(self) -> None:
         """
-        #if False:
-        # Check if trader has enough sugar and spice
-        mean_sugar_metabolism = 2.5 + random.random()
-        mean_spice_metabolism = 2.5 + random.random()
-        if (self.sugar >= self.model.repopulate_factor * mean_sugar_metabolism
-                and self.spice >= self.model.repopulate_factor * mean_spice_metabolism):
-            probability_of_repopulate = np.log(max((self.sugar / mean_sugar_metabolism),
-                                                   (self.spice / mean_spice_metabolism))
-                                               / self.model.repopulate_factor)
-            if random.random() < probability_of_repopulate:
-                # Create new trader
-                self.model.repopulation()
+        Repopulate the grid with new traders.
 
-                repopulate_loss_ratio = 0.5
-                # Reduce sugar and spice
-                self.sugar *= 1 - repopulate_loss_ratio
-                self.spice *= 1 - repopulate_loss_ratio
+        Returns:
+            None
         """
         if (self.sugar >= self.model.repopulate_factor * self.sugar_metabolism
                 and self.spice >= self.model.repopulate_factor * self.spice_metabolism):
@@ -251,6 +342,12 @@ class Trader(Agent):
             self.spice *= 1 - repopulate_loss_ratio
 
     def age_increase(self):
+        """
+        Increment the age of the trader, and check if the trader has reached the maximum age.
+
+        Returns:
+            None
+        """
         # Increment age
         self.age += 1
 
@@ -259,9 +356,25 @@ class Trader(Agent):
             self.has_died = True
             self.model.deaths_age_step += 1
 
-    def welfare(self, sugar, spice):
+    def welfare(self, sugar: float, spice: float) -> float:
+        """
+        Compute the welfare of the trader based on sugar and spice
+
+        Args:
+            sugar (float): Sugar resource of the trader
+            spice (float): Spice resource of the trader
+
+        Returns:
+            float: Welfare of the trader
+        """
         return sugar ** self.sugar_weight * spice ** self.spice_weight
 
-    def update_wealth(self):
+    def update_wealth(self) -> None:
+        """
+        Update the wealth of the trader based on sugar and spice metabolism rates
+
+        Returns:
+            None
+        """
         self.wealth = self.sugar / self.sugar_metabolism + self.spice / self.spice_metabolism
         self.model.wealth_step.append(self.wealth)

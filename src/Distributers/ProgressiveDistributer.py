@@ -1,8 +1,30 @@
 from .BaseDistributer import BaseDistributer
+from src.Taxers.BaseTaxer import BaseTaxer
 
 
 class ProgressiveDistributer(BaseDistributer):
-    def distribute(self, agents, taxer):
+    """
+    Distributes resources based on a class system. Agents are divided into three classes based on their wealth and
+    resources are distributed based on the class they belong. The following class system is used:
+    - Low class: Agents with wealth below the low threshold
+    - Middle class: Agents with wealth between the low and middle threshold
+    - High class: Agents with wealth above the middle threshold
+
+    Low class agents receive 4/3 of the total tax collection, middle class agents receive 1/3 of the total tax
+    collection, and high class agents receive 2/3 of the total tax collection.
+    """
+    def distribute(self, agents: dict, taxer: BaseTaxer) -> None:
+        """
+        Distribute according to progressive scheme.
+
+        Args:
+            agents (dict): Dictionary of agents
+            taxer (BaseTaxer): Taxer object
+
+        Returns:
+            None
+
+        """
         # Get wealth of all agents
         wealth = {
             'sugar': [agent.sugar / agent.sugar_metabolism for agent in agents],
@@ -20,7 +42,6 @@ class ProgressiveDistributer(BaseDistributer):
 
             # Find class thresholds
             low_threshold[key], middle_threshold[key], low_n[key], middle_n[key] = class_thresholds(wealth[key])
-
 
         # Find how much each class gets distributed
         low_class = {}
@@ -58,6 +79,7 @@ class ProgressiveDistributer(BaseDistributer):
         # Reset taxes collection
         taxer.reset_tax()
 
+
 def class_thresholds(resource):
     # Find the threshold for classes
     low_n = len(resource) // 3 + 1
@@ -68,4 +90,3 @@ def class_thresholds(resource):
         middle_n = len(resource) - 1
 
     return resource[low_n], resource[middle_n], low_n, middle_n
-

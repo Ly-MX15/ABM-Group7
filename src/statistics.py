@@ -1,7 +1,18 @@
 import numpy as np
+from mesa.model import Model
 
 
-def compute_std_trade_price(model):
+def compute_std_trade_price(model: Model) -> float:
+    """
+    Compute the standard deviation of the log of trade prices for the current step.
+
+    Args:
+        model (Model): Model model instance.
+
+    Returns:
+        float: Standard deviation of the log of trade prices for the current step
+
+    """
     trade_data = model.get_trade_log()
     if len(trade_data) == 0:
         return 0
@@ -13,7 +24,17 @@ def compute_std_trade_price(model):
     return std_log_price
 
 
-def compute_average_trade_price(model):
+def compute_average_trade_price(model: Model) -> float:
+    """
+    Compute the average of the log of trade prices for the current step.
+
+    Args:
+        model (Model): Model model instance.
+
+    Returns:
+        float: Average of the log of trade prices for the current step
+
+    """
     trade_data = model.get_trade_log()
     if len(trade_data) == 0:
         return 0
@@ -25,20 +46,37 @@ def compute_average_trade_price(model):
     return average_price
 
 
-def compute_trade_counts(model):
+def compute_trade_counts(model: Model) -> int:
+    """
+    Compute the number of trades that occurred in the current step.
+
+    Args:
+        model (Model): Model model instance.
+
+    Returns:
+        int: Number of trades that occurred in the current step
+
+    """
     trade_data = model.get_trade_log()
     current_step_trades = trade_data[trade_data["Step"] == model.current_step]
     return len(current_step_trades)
 
 
-def compute_gini(model):
+def compute_gini(model: Model) -> float:
+    """
+    Compute the Gini coefficient for the current step.
+
+    Args:
+        model (Model): Model model instance.
+
+    Returns:
+        float: Gini coefficient for the current step
+
+    """
     agent_wealths = [agent.sugar / agent.sugar_metabolism + agent.spice / agent.spice_metabolism for agent in
                      model.traders.values()]
     sorted_wealths = sorted(agent_wealths)
-    # plt.hist(sorted_wealths, bins=10)
-    # plt.show()
     n = len(sorted_wealths)
-    # print(n)
     if n == 0:
         return 0
     cumulative_sum = sum((i + 1) * wealth for i, wealth in enumerate(sorted_wealths))
@@ -48,28 +86,72 @@ def compute_gini(model):
     return gini
 
 
-def compute_deaths_by_age(model):
-    """Return the number of deaths by age for the current step."""
+def compute_deaths_by_age(model: Model) -> int:
+    """
+    Return the number of deaths by age for the current step.
+
+    Args:
+        model (Model): Model instance.
+
+    Returns:
+        int: Number of deaths by age for the current step
+
+    """
     return model.deaths_age[-1] if model.deaths_age else 0
 
 
-def compute_average_wealth(model):
-    """Return the number of deaths by age for the current step."""
+def compute_average_wealth(model: Model) -> float:
+    """
+    Compute the average wealth of all living Trader agents.
+
+    Args:
+        model (Model): Model instance.
+
+    Returns:
+        float: Average wealth of all living Trader agents
+
+    """
     return model.averagewealth[-1] if model.averagewealth else 0
 
 
-def compute_deaths_by_hunger(model):
-    """Return the number of deaths by hunger for the current step."""
+def compute_deaths_by_hunger(model: Model) -> int:
+    """
+    Return the number of deaths by hunger for the current step.
+
+    Args:
+        model (Model): Model instance.
+
+    Returns:
+        int: Number of deaths by hunger for the current step
+
+    """
     return model.deaths_starved[-1] if model.deaths_starved else 0
 
 
-def compute_repopulation(model):
-    """Return the number of deaths by hunger for the current step."""
+def compute_repopulation(model: Model) -> int:
+    """
+    Return the number of agents that were born in the current step.
+    Args:
+        model (Model): Model instance.
+
+    Returns:
+        int: Number of agents that were born in the current step
+
+    """
     return model.reproduced[-1] if model.reproduced else 0
 
 
-def compute_average_vision(model):
-    """Compute the average vision of all living Trader agents."""
+def compute_average_vision(model: Model) -> float:
+    """
+    Compute the average vision of all living Trader agents.
+
+    Args:
+        model (Model):
+
+    Returns:
+        float: Average vision of all living Trader agents
+
+    """
     traders = [agent for agent in model.traders.values()]
     if len(traders) == 0:
         return 0
@@ -77,8 +159,17 @@ def compute_average_vision(model):
     return average_vision
 
 
-def compute_average_sugar_metabolism(model):
-    """Compute the average sugar metabolism of all living Trader agents."""
+def compute_average_sugar_metabolism(model: Model) -> float:
+    """
+    Compute the average sugar metabolism of all living Trader agents.
+
+    Args:
+        model (Model): Model instance.
+
+    Returns:
+        float: Average sugar metabolism of all living Trader
+
+    """
     traders = [agent for agent in model.traders.values()]
     if len(traders) == 0:
         return 0
@@ -86,8 +177,17 @@ def compute_average_sugar_metabolism(model):
     return average_sugar_metabolism
 
 
-def compute_average_spice_metabolism(model):
-    """Compute the average spice metabolism of all living Trader agents."""
+def compute_average_spice_metabolism(model: Model) -> float:
+    """
+    Compute the average spice metabolism of all living Trader agents.
+
+    Args:
+        model (Model): Model instance.
+
+    Returns:
+        float: Average spice metabolism of all living Trader agents
+
+    """
     traders = [agent for agent in model.traders.values()]
     if len(traders) == 0:
         return 0
@@ -95,7 +195,17 @@ def compute_average_spice_metabolism(model):
     return average_spice_metabolism
 
 
-def compute_lower_spice_metabolism(model):
+def compute_lower_spice_metabolism(model: Model) -> float:
+    """
+    Compute the average spice metabolism of all living Trader agents in the lower region of the grid.
+
+    Args:
+        model (Model): Model instance.
+
+    Returns:
+        float: Average spice metabolism of all living Trader agents in the lower region of the grid
+
+    """
     spice_metabolisms = [agent.spice_metabolism for agent in model.traders.values() if
                          agent.pos[1] < 23]
     if len(spice_metabolisms) == 0:
@@ -103,7 +213,17 @@ def compute_lower_spice_metabolism(model):
     return np.mean(spice_metabolisms)
 
 
-def compute_lower_sugar_metabolism(model):
+def compute_lower_sugar_metabolism(model: Model) -> float:
+    """
+    Compute the average sugar metabolism of all living Trader agents in the lower region of the grid.
+
+    Args:
+        model (Model): Model instance.
+
+    Returns:
+        float: Average sugar metabolism of all living Trader agents in the lower region of the grid
+
+    """
     sugar_metabolisms = [agent.sugar_metabolism for agent in model.traders.values() if
                          agent.pos[1] < 23]
     if len(sugar_metabolisms) == 0:
@@ -111,7 +231,17 @@ def compute_lower_sugar_metabolism(model):
     return np.mean(sugar_metabolisms)
 
 
-def compute_middle_spice_metabolism(model):
+def compute_middle_spice_metabolism(model: Model) -> float:
+    """
+    Compute the average spice metabolism of all living Trader agents in the middle region of the grid.
+
+    Args:
+        model (Model): Model instance.
+
+    Returns:
+        float: Average spice metabolism of all living Trader agents in the middle region of the grid
+
+    """
     spice_metabolisms = [agent.spice_metabolism for agent in model.traders.values() if
                          23 <= agent.pos[1] <= 27]
     if len(spice_metabolisms) == 0:
@@ -119,7 +249,17 @@ def compute_middle_spice_metabolism(model):
     return np.mean(spice_metabolisms)
 
 
-def compute_middle_sugar_metabolism(model):
+def compute_middle_sugar_metabolism(model: Model) -> float:
+    """
+    Compute the average sugar metabolism of all living Trader agents in the middle region of the grid.
+
+    Args:
+        model (Model): Model instance.
+
+    Returns:
+        float: Average sugar metabolism of all living Trader agents in the middle region of the grid
+
+    """
     sugar_metabolisms = [agent.sugar_metabolism for agent in model.traders.values() if
                          23 <= agent.pos[1] <= 27]
     if len(sugar_metabolisms) == 0:
@@ -127,7 +267,17 @@ def compute_middle_sugar_metabolism(model):
     return np.mean(sugar_metabolisms)
 
 
-def compute_upper_spice_metabolism(model):
+def compute_upper_spice_metabolism(model: Model) -> float:
+    """
+    Compute the average spice metabolism of all living Trader agents in the upper region of the grid.
+
+    Args:
+        model (Model): Model instance.
+
+    Returns:
+        float: Average spice metabolism of all living Trader agents in the upper region of the grid
+
+    """
     spice_metabolisms = [agent.spice_metabolism for agent in model.traders.values() if
                          agent.pos[1] > 27]
     if len(spice_metabolisms) == 0:
@@ -135,7 +285,17 @@ def compute_upper_spice_metabolism(model):
     return np.mean(spice_metabolisms)
 
 
-def compute_upper_sugar_metabolism(model):
+def compute_upper_sugar_metabolism(model: Model) -> float:
+    """
+    Compute the average sugar metabolism of all living Trader agents in the upper region of the grid.
+
+    Args:
+        model (Model): Model instance.
+
+    Returns:
+        float: Average sugar metabolism of all living Trader agents in the upper region of the grid
+
+    """
     sugar_metabolisms = [agent.sugar_metabolism for agent in model.traders.values() if
                          agent.pos[1] > 27]
     if len(sugar_metabolisms) == 0:
@@ -143,7 +303,17 @@ def compute_upper_sugar_metabolism(model):
     return np.mean(sugar_metabolisms)
 
 
-def compute_lower_vision(model):
+def compute_lower_vision(model: Model) -> float:
+    """
+    Compute the average vision of all living Trader agents in the lower region of the grid.
+
+    Args:
+        model (Model): Model instance.
+
+    Returns:
+        float: Average vision of all living Trader agents in the lower region of the grid
+
+    """
     visions = [agent.vision for agent in model.traders.values() if
                agent.pos[1] < 23]
     if len(visions) == 0:
@@ -151,7 +321,17 @@ def compute_lower_vision(model):
     return np.mean(visions)
 
 
-def compute_middle_vision(model):
+def compute_middle_vision(model: Model) -> float:
+    """
+    Compute the average vision of all living Trader agents in the middle region of the grid.
+
+    Args:
+        model (Model): Model instance.
+
+    Returns:
+        float: Average vision of all living Trader agents in the middle region of the grid
+
+    """
     visions = [agent.vision for agent in model.traders.values() if
                23 <= agent.pos[1] <= 27]
     if len(visions) == 0:
@@ -159,7 +339,17 @@ def compute_middle_vision(model):
     return np.mean(visions)
 
 
-def compute_upper_vision(model):
+def compute_upper_vision(model: Model) -> float:
+    """
+    Compute the average vision of all living Trader agents in the upper region of the grid.
+
+    Args:
+        model (Model): Model instance.
+
+    Returns:
+        float: Average vision of all living Trader agents in the upper region of the grid
+
+    """
     visions = [agent.vision for agent in model.traders.values() if
                agent.pos[1] > 27]
     if len(visions) == 0:

@@ -1,29 +1,33 @@
 from .BaseTaxer import BaseTaxer
-import logging
+from src.Agents.Trader import Trader
+
 
 class ProgressiveTaxer(BaseTaxer):
-    def collect_taxes(self, agents):
+    """
+    Collects taxes from the traders using a progressive tax system. This taxer collects taxes from the traders using a
+    class system. The class of the trader is determined by their wealth. The following classes are defined:
+        - Low class: 0 - 33rd percentile
+        - Middle class: 33rd - 66th percentile
+        - High class: 66th - 100th percentile
+    The tax rates for each class are:
+        - Low class: tax_rate * 0.66
+        - Middle class: tax_rate
+        - High class: tax_rate * 1.33
+    """
+    def collect_taxes(self, agents: dict) -> None:
+        """
+        Collects taxes from the traders using a progressive tax system.
 
-        # Set up logger
-        logger = logging.getLogger("ProgressiveTaxer")
-        if not logger.hasHandlers():
-            handler = logging.FileHandler("taxer.log")
-            formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-            handler.setFormatter(formatter)
-            logger.addHandler(handler)
-            logger.setLevel(logging.INFO)
-        
+        Args:
+            agents (dict): Dictionary of agents
+
+        Returns:
+            None
+
+        """
         # Get wealth distribution to determine tax rates
         wealths = [agent.wealth for agent in agents]
 
-        # Log the number of agents
-        logger.info(f"Number of agents: {len(wealths)}")
-        
-        # If there are not enough agents, log the event and return early
-        if len(wealths) < 3:
-            logger.warning("Not enough agents to apply progressive taxes")
-            return
-        
         # Sort wealth
         wealths.sort()
 
@@ -40,7 +44,18 @@ class ProgressiveTaxer(BaseTaxer):
             else:
                 self.update_goods(agent, self.tax_rate * 1.33)
 
-    def update_goods(self, agent, tax_rate):
+    def update_goods(self, agent: Trader, tax_rate: float) -> None:
+        """
+        Updates the agent's goods and taxes collection.
+
+        Args:
+            agent (Trader): Agent
+            tax_rate (float): Tax rate
+
+        Returns:
+            None
+
+        """
         # Compute excessive sugar and spice
         excessive_sugar = max(0, agent.sugar - agent.sugar_metabolism)
         excessive_spice = max(0, agent.spice - agent.spice_metabolism)
