@@ -123,6 +123,7 @@ server = ModularServer(
         "max_age_mean": 93.55770520865917,
         "repopulate_factor": 10.740787368267775,
         "cell_regeneration": 4.586485207080841,
+        "track_scheme": "server"
     }
 )
 
